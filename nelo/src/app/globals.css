@@ -93,3 +93,43 @@ body {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
+
+.ProseMirror {
+  min-height: 400px;
+  outline: none;
+}
+
+.ProseMirror p {
+  margin: 0.75rem 0;
+}
+
+.ProseMirror h2 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.ProseMirror ul {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+  list-style: disc;
+}
+
+.ProseMirror ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+  list-style: decimal;
+}
+
+.ProseMirror blockquote {
+  margin: 1rem 0;
+  border-left: 4px solid var(--accent);
+  padding-left: 1rem;
+  color: var(--secondary-text);
+}
+
+.ProseMirror a {
+  color: var(--accent);
+  text-decoration: underline;
+}

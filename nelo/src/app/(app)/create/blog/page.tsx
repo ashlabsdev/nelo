@@ -1,6 +1,15 @@
-import BlogEditor from "@/components/blog/blog-editor";
+import { getCurrentProfile } from "@/lib/profile";
 
-export default function CreateBlogPage() {
+import CreateBlogForm from "@/components/blog/create-blog-form";
+
+export default async function CreateBlogPage() {
+  const profile =
+    await getCurrentProfile();
+
+  if (!profile) {
+    return null;
+  }
+
   return (
     <section className="mx-auto max-w-4xl">
 
@@ -9,18 +18,12 @@ export default function CreateBlogPage() {
       </h1>
 
       <p className="theme-text-secondary mt-2">
-        Share your thoughts with NELO.
+        Share your thoughts with the NELO community.
       </p>
 
-      <input
-        type="text"
-        placeholder="Blog title"
-        className="theme-bg theme-text theme-border mt-8 w-full rounded-xl border px-4 py-3 text-xl font-semibold outline-none"
+      <CreateBlogForm
+        userId={profile.id}
       />
-
-      <div className="mt-5">
-        <BlogEditor />
-      </div>
 
     </section>
   );
