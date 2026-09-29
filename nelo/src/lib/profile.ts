@@ -14,16 +14,18 @@ export async function getCurrentProfile() {
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select(
-      `
+    .select(`
       id,
       username,
       avatar_id,
+      bio,
+      website_url,
+      link_2,
+      link_3,
       role,
       created_at,
       updated_at
-      `
-    )
+    `)
     .eq("id", userId)
     .single();
 

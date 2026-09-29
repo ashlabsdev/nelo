@@ -33,33 +33,31 @@ const themes: {
 ];
 
 export default function ThemeSelector() {
-  const {
-    theme,
-    setTheme,
-  } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   return (
     <div className="flex items-center gap-2">
-      {themes.map((item) => (
-        <button
-          key={item.id}
-          type="button"
-          title={item.name}
-          aria-label={`Use ${item.name} theme`}
-          onClick={() =>
-            setTheme(item.id)
-          }
-          className={`h-6 w-6 rounded-full border-2 transition ${
-            theme === item.id
-              ? "scale-110 border-current"
-              : "border-transparent"
-          }`}
-          style={{
-            backgroundColor:
-              item.color,
-          }}
-        />
-      ))}
+      {themes.map((item) => {
+        const selected = theme === item.id;
+
+        return (
+          <button
+            key={item.id}
+            type="button"
+            title={item.name}
+            aria-label={`Use ${item.name} theme`}
+            onClick={() => setTheme(item.id)}
+            className={`h-6 w-6 rounded-full border-2 transition ${
+              selected
+                ? "scale-110 border-current"
+                : "border-transparent"
+            }`}
+            style={{
+              backgroundColor: item.color,
+            }}
+          />
+        );
+      })}
     </div>
   );
 }

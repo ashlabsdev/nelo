@@ -10,6 +10,12 @@ type ProfileFormProps = {
   userId: string;
   initialUsername: string;
   initialAvatarId: number;
+
+  initialBio?: string | null;
+  initialWebsiteUrl?: string | null;
+  initialLink2?: string | null;
+  initialLink3?: string | null;
+
   isFirstSetup?: boolean;
 };
 
@@ -17,8 +23,24 @@ export default function ProfileForm({
   userId,
   initialUsername,
   initialAvatarId,
+  initialBio = "",
+  initialWebsiteUrl = "",
+  initialLink2 = "",
+  initialLink3 = "",
   isFirstSetup = false,
 }: ProfileFormProps) {
+  const [bio, setBio] =
+  useState(initialBio ?? "");
+
+const [websiteUrl, setWebsiteUrl] =
+  useState(initialWebsiteUrl ?? "");
+
+const [link2, setLink2] =
+  useState(initialLink2 ?? "");
+
+const [link3, setLink3] =
+  useState(initialLink3 ?? "");
+
   const [username, setUsername] =
     useState(initialUsername.startsWith("user_") ? "" : initialUsername);
   const router = useRouter();
@@ -58,7 +80,20 @@ export default function ProfileForm({
       .update({
         username: cleanUsername,
         avatar_id: avatarId,
-        updated_at: new Date().toISOString(),
+
+        bio: bio.trim() || null,
+
+        website_url:
+          websiteUrl.trim() || null,
+
+        link_2:
+          link2.trim() || null,
+
+        link_3:
+          link3.trim() || null,
+
+        updated_at:
+          new Date().toISOString(),
       })
       .eq("id", userId);
 
@@ -121,6 +156,76 @@ export default function ProfileForm({
         </p>
       </div>
 
+      <div className="mt-6">
+        <label
+          htmlFor="bio"
+          className="mb-2 block font-medium"
+        >
+          Bio
+        </label>
+
+        <textarea
+          id="bio"
+          value={bio}
+          maxLength={300}
+          rows={4}
+          onChange={(event) =>
+            setBio(event.target.value)
+          }
+          placeholder="Tell people a little about yourself..."
+          className="theme-bg theme-text theme-border w-full resize-none rounded-lg border px-4 py-3 outline-none"
+        />
+
+        <p className="theme-text-secondary mt-1 text-sm">
+          {bio.length}/300
+        </p>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold">
+          Links
+        </h2>
+
+        <p className="theme-text-secondary mt-1 text-sm">
+          Add websites or social links you want
+          visitors to see.
+        </p>
+
+        <div className="mt-4 space-y-3">
+
+          <input
+            type="url"
+            value={websiteUrl}
+            onChange={(event) =>
+              setWebsiteUrl(event.target.value)
+            }
+            placeholder="https://yourwebsite.com"
+            className="theme-bg theme-text theme-border w-full rounded-lg border px-4 py-3 outline-none"
+          />
+
+          <input
+            type="url"
+            value={link2}
+            onChange={(event) =>
+              setLink2(event.target.value)
+            }
+            placeholder="https://github.com/..."
+            className="theme-bg theme-text theme-border w-full rounded-lg border px-4 py-3 outline-none"
+          />
+
+          <input
+            type="url"
+            value={link3}
+            onChange={(event) =>
+              setLink3(event.target.value)
+            }
+            placeholder="https://linkedin.com/..."
+            className="theme-bg theme-text theme-border w-full rounded-lg border px-4 py-3 outline-none"
+          />
+
+        </div>
+      </div>
+
       <div className="mt-8">
         <p className="font-medium">
           Choose your avatar
@@ -135,21 +240,20 @@ export default function ProfileForm({
               <button
                 type="button"
                 key={avatar.id}
-                onClick={() =>
-                  setAvatarId(avatar.id)
-                }
-                className={`rounded-full border-4 p-1 transition ${
-                  selected
-                    ? "var(--accent)"
-                    : "transparent"
-                }`}
+                onClick={() => setAvatarId(avatar.id)}
+                aria-label={`Select ${avatar.name}`}
+                className="rounded-full bg-transparent p-1 transition hover:scale-105"
+                style={{
+                  boxShadow: selected
+                    ? "0 0 0 4px var(--accent)"
+                    : "none",
+                }}
               >
                 <Image
                   src={avatar.src}
                   alt={avatar.name}
                   width={80}
                   height={80}
-                  loading="eager"
                   className="aspect-square rounded-full object-cover"
                 />
               </button>

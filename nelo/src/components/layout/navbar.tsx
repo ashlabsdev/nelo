@@ -1,11 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import {
-  User,
-} from "lucide-react";
-
 import NavLinks from "./nav-links";
+import LogoutButton from "@/components/auth/logout-button";
 
 import ThemeSelector from "@/components/theme/theme-selector";
 import { getAvatarSrc } from "@/lib/avatars";
@@ -48,7 +45,6 @@ export default function Navbar({
         {/* Right section */}
 
         <div className="flex items-center gap-4">
-
           <ThemeSelector />
 
           <Link
@@ -57,19 +53,22 @@ export default function Navbar({
             className="flex items-center gap-2"
           >
             <Image
-              src={getAvatarSrc(
-                avatarId
-              )}
+              src={getAvatarSrc(avatarId)}
               alt={`${username} avatar`}
               width={40}
               height={40}
-              className="h-10 w-10 rounded-full object-cover"
+              className="h-8 w-8 rounded-full object-cover"
             />
 
             <span className="theme-text hidden text-sm font-medium lg:block">
               {username}
             </span>
           </Link>
+
+          <div className="hidden md:block">
+            <LogoutButton compact />
+          </div>
+
         </div>
       </div>
     </header>

@@ -9,7 +9,7 @@ import {
   ImageIcon,
   Headphones,
   MessageCircle,
-  User,
+  User, PlusCircle,
 } from "lucide-react";
 
 const items = [
@@ -17,6 +17,11 @@ const items = [
     href: "/home",
     label: "Home",
     icon: Home,
+  },
+  {
+    href: "/create",
+    label: "Create",
+    icon: PlusCircle,
   },
   {
     href: "/blogs",
