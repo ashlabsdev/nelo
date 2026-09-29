@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 import { createClient } from "@/lib/supabase/client";
+import SocialLogin from "@/components/auth/social-login";
 
 export default function LoginPage() {
   const supabase = createClient();
@@ -79,6 +80,18 @@ export default function LoginPage() {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-gray-800" />
+
+          <span className="text-sm text-gray-500">
+            OR
+          </span>
+
+          <div className="h-px flex-1 bg-gray-800" />
+        </div>
+
+        <SocialLogin />
 
         {message && (
           <p className="mt-4 text-center text-sm text-red-400">
