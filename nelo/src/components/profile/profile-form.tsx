@@ -112,10 +112,10 @@ export default function ProfileForm({
             setUsername(event.target.value)
           }
           placeholder="Choose a username"
-          className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-black"
+          className="theme-bg theme-text theme-border w-full rounded-lg border px-4 py-3 outline-none"
         />
 
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm theme-text-secondary">
           3–20 characters. Letters, numbers and
           underscores only.
         </p>
@@ -140,8 +140,8 @@ export default function ProfileForm({
                 }
                 className={`rounded-full border-4 p-1 transition ${
                   selected
-                    ? "border-primary-500"
-                    : "border-transparent"
+                    ? "var(--accent)"
+                    : "transparent"
                 }`}
               >
                 <Image
@@ -172,7 +172,7 @@ export default function ProfileForm({
 
       <button
         disabled={loading}
-        className="mt-8 rounded-lg bg-black px-6 py-3 font-medium text-white disabled:opacity-50"
+        className="theme-accent-bg mt-8 rounded-lg px-6 py-3 font-medium text-white disabled:opacity-50"
       >
         {loading
           ? "Saving..."

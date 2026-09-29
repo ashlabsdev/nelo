@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+
+import { ThemeProvider } from "@/components/theme/theme-provider";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -20,13 +23,45 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const theme = localStorage.getItem("nelo-theme");
+
+                if (theme && theme !== "default") {
+                  document.documentElement.setAttribute(
+                    "data-theme",
+                    theme
+                  );
+                } else {
+                  document.documentElement.removeAttribute(
+                    "data-theme"
+                  );
+                }
+              } catch {}
+            `,
+          }}
+        />
+      </head>
+
+      <body className="min-h-screen">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

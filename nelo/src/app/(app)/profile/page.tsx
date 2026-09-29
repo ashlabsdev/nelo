@@ -28,26 +28,12 @@ export default async function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-white p-10 text-black">
+    <main className="min-h-screen theme-bg p-10 theme-text">
       <div className="mx-auto max-w-4xl">
-        <div className="flex items-center justify-between">
-          <Image
-            src="/logo.png"
-            alt="NELO Logo"
-            width={160}
-            height={160}
-          />
-
-          <LogoutButton />
-        </div>
-
+ 
         <h1 className="mt-8 text-3xl font-bold">
-          Profile
+          Update Profile
         </h1>
-
-        <p className="mt-2 text-gray-500">
-          Update your NELO profile.
-        </p>
 
         <ProfileForm
           userId={profile.id}

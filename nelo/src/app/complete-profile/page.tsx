@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
@@ -29,13 +28,7 @@ export default async function CompleteProfilePage() {
   return (
     <main className="min-h-screen bg-white p-10 text-black">
       <div className="mx-auto max-w-3xl">
-        <Image
-          src="/logo.png"
-          alt="NELO Logo"
-          width={160}
-          height={160}
-        />
-
+        
         <h1 className="mt-6 text-3xl font-bold">
           Complete your profile
         </h1>

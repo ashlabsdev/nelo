@@ -2,25 +2,94 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --surface: #f8fafc;
+  --primary-text: #111827;
+  --secondary-text: #6b7280;
+  --accent: #6366f1;
+  --border: #e5e7eb;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Midnight */
+html[data-theme="midnight"] {
+  --background: #0f172a;
+  --surface: #1e293b;
+  --primary-text: #f8fafc;
+  --secondary-text: #94a3b8;
+  --accent: #818cf8;
+  --border: #334155;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Forest */
+html[data-theme="forest"] {
+  --background: #f0fdf4;
+  --surface: #dcfce7;
+  --primary-text: #14532d;
+  --secondary-text: #4b7a5a;
+  --accent: #16a34a;
+  --border: #bbf7d0;
+}
+
+/* Warm */
+html[data-theme="warm"] {
+  --background: #fff7ed;
+  --surface: #ffedd5;
+  --primary-text: #431407;
+  --secondary-text: #9a6542;
+  --accent: #ea580c;
+  --border: #fed7aa;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  color: var(--primary-text);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+/* NELO theme helper classes */
+
+.theme-bg {
+  background-color: var(--background);
+}
+
+.theme-surface {
+  background-color: var(--surface);
+}
+
+.theme-text {
+  color: var(--primary-text);
+}
+
+.theme-text-secondary {
+  color: var(--secondary-text);
+}
+
+.theme-accent {
+  color: var(--accent);
+}
+
+.theme-accent-bg {
+  background-color: var(--accent);
+}
+
+.theme-border {
+  border-color: var(--border);
+}
+
+/* Tailwind theme mappings */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--primary-text);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 }
