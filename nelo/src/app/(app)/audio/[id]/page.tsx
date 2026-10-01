@@ -161,7 +161,7 @@ export default async function AudioPage({
         </h1>
 
         <audio
-          controls
+          controls preload="metadata"
           src={audioUrl}
           className="mt-6 w-full"
         />

@@ -414,7 +414,7 @@ export default function CreateAudioForm({
         </label>
 
         {!previewUrl ? (
-          <label className="theme-surface theme-border flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed p-8 text-center transition hover:opacity-80">
+          <label className="theme-surface theme-border flex min-h-55 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed p-8 text-center transition hover:opacity-80">
 
             <AudioLines
               size={42}
