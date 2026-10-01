@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import BlogEditor from "@/components/blog/blog-editor";
 
 import { createClient } from "@/lib/supabase/client";
+import { extractTextFromTiptap } from "@/lib/blog";
 
 type CreateBlogFormProps = {
   userId: string;
@@ -29,31 +30,13 @@ export default function CreateBlogForm({
   const [hashtags, setHashtags] =
     useState("");
 
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
 
   const [loading, setLoading] =
     useState(false);
-
-    function hasEditorContent(
-        json: object | null
-        ) {
-        if (!json) {
-            return false;
-        }
-
-        const document =
-            json as {
-            content?: unknown[];
-            };
-
-        return (
-            Array.isArray(
-            document.content
-            ) &&
-            document.content.length > 0
-        );
-        }
 
   async function handleSubmit(
     event: FormEvent
@@ -61,6 +44,10 @@ export default function CreateBlogForm({
     event.preventDefault();
 
     setErrorMessage("");
+
+    // -----------------------------
+    // Validate title
+    // -----------------------------
 
     const cleanTitle =
       title.trim();
@@ -72,17 +59,34 @@ export default function CreateBlogForm({
       setErrorMessage(
         "Title must be between 3 and 150 characters."
       );
+
+      return;
+    }
+
+    // -----------------------------
+    // Validate blog content
+    // -----------------------------
+
+    const plainText =
+      extractTextFromTiptap(
+        editorJson
+      );
+
+    if (!plainText) {
+      setErrorMessage(
+        "Please write some blog content."
+      );
+
       return;
     }
 
     if (
-        !hasEditorContent(
-            editorJson
-        )
-        ) {
+      plainText.length > 50000
+    ) {
       setErrorMessage(
-        "Please write some blog content."
+        "Blog content cannot exceed 50,000 characters."
       );
+
       return;
     }
 
@@ -91,29 +95,43 @@ export default function CreateBlogForm({
     const supabase =
       createClient();
 
-    const { data: post, error } =
-      await supabase
-        .from("posts")
-        .insert({
-          user_id: userId,
-          type: "blog",
-          title: cleanTitle,
-          content_json: editorJson,
-          content: null,
-          media_path: null,
-        })
-        .select("id")
-        .single();
+    // -----------------------------
+    // Create blog post
+    // -----------------------------
 
-    if (error || !post) {
+    const {
+      data: post,
+      error: postError,
+    } = await supabase
+      .from("posts")
+      .insert({
+        user_id: userId,
+        type: "blog",
+        title: cleanTitle,
+        content_json: editorJson,
+        content: null,
+        media_path: null,
+      })
+      .select("id")
+      .single();
+
+    if (
+      postError ||
+      !post
+    ) {
       setErrorMessage(
-        error?.message ??
+        postError?.message ??
           "Could not publish blog."
       );
 
       setLoading(false);
+
       return;
     }
+
+    // -----------------------------
+    // Parse hashtags
+    // -----------------------------
 
     const parsedHashtags =
       hashtags
@@ -125,11 +143,10 @@ export default function CreateBlogForm({
             .toLowerCase()
         )
         .filter(Boolean)
-        .filter(
-          (tag) =>
-            /^[a-z0-9_]{1,30}$/.test(
-              tag
-            )
+        .filter((tag) =>
+          /^[a-z0-9_]{1,30}$/.test(
+            tag
+          )
         );
 
     const uniqueHashtags = [
@@ -137,6 +154,10 @@ export default function CreateBlogForm({
         parsedHashtags
       ),
     ].slice(0, 10);
+
+    // -----------------------------
+    // Create/find hashtags
+    // -----------------------------
 
     if (
       uniqueHashtags.length > 0
@@ -159,12 +180,14 @@ export default function CreateBlogForm({
           hashtagIds.push(
             existing.id
           );
+
           continue;
         }
 
         const {
           data: created,
-          error: hashtagError,
+          error:
+            hashtagError,
         } = await supabase
           .from("hashtags")
           .insert({
@@ -179,6 +202,7 @@ export default function CreateBlogForm({
             "23505"
         ) {
           console.error(
+            "Hashtag insert error:",
             hashtagError
           );
 
@@ -190,6 +214,10 @@ export default function CreateBlogForm({
             created.id
           );
         } else {
+          // Another user may have
+          // created the same hashtag
+          // at nearly the same time.
+
           const {
             data: retry,
           } = await supabase
@@ -206,14 +234,25 @@ export default function CreateBlogForm({
         }
       }
 
+      // -----------------------------
+      // Connect hashtags to post
+      // -----------------------------
+
       if (
         hashtagIds.length > 0
       ) {
-        await supabase
-          .from("post_hashtags")
+        const {
+          error:
+            postHashtagError,
+        } = await supabase
+          .from(
+            "post_hashtags"
+          )
           .insert(
             hashtagIds.map(
-              (hashtagId) => ({
+              (
+                hashtagId
+              ) => ({
                 post_id:
                   post.id,
                 hashtag_id:
@@ -221,8 +260,21 @@ export default function CreateBlogForm({
               })
             )
           );
+
+        if (
+          postHashtagError
+        ) {
+          console.error(
+            "Post hashtag insert error:",
+            postHashtagError
+          );
+        }
       }
     }
+
+    // -----------------------------
+    // Redirect to published blog
+    // -----------------------------
 
     router.push(
       `/blogs/${post.id}`
@@ -236,6 +288,7 @@ export default function CreateBlogForm({
       onSubmit={handleSubmit}
       className="mt-8"
     >
+      {/* Title */}
 
       <div>
         <label
@@ -247,8 +300,10 @@ export default function CreateBlogForm({
 
         <input
           id="title"
+          type="text"
           value={title}
           maxLength={150}
+          required
           onChange={(event) =>
             setTitle(
               event.target.value
@@ -263,9 +318,9 @@ export default function CreateBlogForm({
         </p>
       </div>
 
+      {/* Editor */}
 
       <div className="mt-6">
-
         <label className="mb-2 block font-medium">
           Blog Content
         </label>
@@ -276,11 +331,14 @@ export default function CreateBlogForm({
           }
         />
 
+        <p className="theme-text-secondary mt-2 text-xs">
+          Maximum 50,000 characters.
+        </p>
       </div>
 
+      {/* Hashtags */}
 
       <div className="mt-6">
-
         <label
           htmlFor="hashtags"
           className="mb-2 block font-medium"
@@ -290,6 +348,7 @@ export default function CreateBlogForm({
 
         <input
           id="hashtags"
+          type="text"
           value={hashtags}
           onChange={(event) =>
             setHashtags(
@@ -301,11 +360,12 @@ export default function CreateBlogForm({
         />
 
         <p className="theme-text-secondary mt-2 text-sm">
-          Up to 10 hashtags.
+          Up to 10 hashtags. Letters,
+          numbers and underscores only.
         </p>
-
       </div>
 
+      {/* Error */}
 
       {errorMessage && (
         <p className="mt-5 text-sm text-red-600">
@@ -313,21 +373,19 @@ export default function CreateBlogForm({
         </p>
       )}
 
+      {/* Publish */}
 
       <div className="mt-8 flex justify-end">
-
         <button
           type="submit"
           disabled={loading}
-          className="theme-accent-bg rounded-lg px-6 py-3 font-medium text-white disabled:opacity-50"
+          className="theme-accent-bg rounded-lg px-6 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading
             ? "Publishing..."
             : "Publish Blog"}
         </button>
-
       </div>
-
     </form>
   );
 }

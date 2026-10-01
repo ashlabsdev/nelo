@@ -5,7 +5,7 @@ import {
   ReactNode,
   useContext,
   useEffect,
-  useState,
+  useSyncExternalStore,
 } from "react";
 
 export type Theme =
@@ -19,27 +19,73 @@ type ThemeContextType = {
   setTheme: (theme: Theme) => void;
 };
 
-const ThemeContext = createContext<
-  ThemeContextType | undefined
->(undefined);
+const ThemeContext =
+  createContext<ThemeContextType | undefined>(
+    undefined,
+  );
 
-function getInitialTheme(): Theme {
-  if (typeof window === "undefined") {
-    return "default";
-  }
+const STORAGE_KEY = "nelo-theme";
 
-  const savedTheme = localStorage.getItem("nelo-theme");
+let currentTheme: Theme = "default";
+let initialized = false;
 
-  if (
-    savedTheme === "default" ||
-    savedTheme === "midnight" ||
-    savedTheme === "forest" ||
-    savedTheme === "warm"
-  ) {
-    return savedTheme;
-  }
+const listeners = new Set<() => void>();
 
+function isValidTheme(
+  value: string | null,
+): value is Theme {
+  return (
+    value === "default" ||
+    value === "midnight" ||
+    value === "forest" ||
+    value === "warm"
+  );
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function getSnapshot(): Theme {
+  return currentTheme;
+}
+
+function getServerSnapshot(): Theme {
   return "default";
+}
+
+function updateStoreTheme(theme: Theme) {
+  if (currentTheme === theme) {
+    return;
+  }
+
+  currentTheme = theme;
+
+  listeners.forEach((listener) => {
+    listener();
+  });
+}
+
+function initializeTheme() {
+  if (
+    initialized ||
+    typeof window === "undefined"
+  ) {
+    return;
+  }
+
+  initialized = true;
+
+  const savedTheme =
+    localStorage.getItem(STORAGE_KEY);
+
+  if (isValidTheme(savedTheme)) {
+    updateStoreTheme(savedTheme);
+  }
 }
 
 export function ThemeProvider({
@@ -47,29 +93,32 @@ export function ThemeProvider({
 }: {
   children: ReactNode;
 }) {
-  const [theme, setThemeState] =
-    useState<Theme>(getInitialTheme);
+  const theme = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot,
+  );
+
+  useEffect(() => {
+    initializeTheme();
+  }, []);
 
   useEffect(() => {
     if (theme === "default") {
       document.documentElement.removeAttribute(
-        "data-theme"
+        "data-theme",
       );
     } else {
       document.documentElement.setAttribute(
         "data-theme",
-        theme
+        theme,
       );
     }
   }, [theme]);
 
   function setTheme(theme: Theme) {
-    setThemeState(theme);
-
-    localStorage.setItem(
-      "nelo-theme",
-      theme
-    );
+    localStorage.setItem(STORAGE_KEY, theme);
+    updateStoreTheme(theme);
   }
 
   return (
@@ -89,10 +138,9 @@ export function useTheme() {
 
   if (!context) {
     throw new Error(
-      "useTheme must be used inside ThemeProvider"
+      "useTheme must be used inside ThemeProvider",
     );
   }
 
   return context;
 }
-

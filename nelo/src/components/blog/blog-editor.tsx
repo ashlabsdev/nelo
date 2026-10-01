@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import Placeholder from "@tiptap/extension-placeholder";
 
 import {
   EditorContent,
@@ -8,7 +13,6 @@ import {
 } from "@tiptap/react";
 
 import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
 
 import {
   Bold,
@@ -29,14 +33,31 @@ type BlogEditorProps = {
 export default function BlogEditor({
   onChange,
 }: BlogEditorProps) {
+  const [showLinkInput, setShowLinkInput] =
+    useState(false);
+
+  const [linkUrl, setLinkUrl] =
+    useState("");
+
+  const [linkSelection, setLinkSelection] =
+    useState<{
+      from: number;
+      to: number;
+    } | null>(null);
+
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        link: {
+          openOnClick: false,
+          autolink: true,
+          defaultProtocol: "https",
+        },
+      }),
 
-      Link.configure({
-        openOnClick: false,
-        autolink: true,
-        defaultProtocol: "https",
+      Placeholder.configure({
+        placeholder:
+          "Start writing your story...",
       }),
     ],
 
@@ -47,18 +68,22 @@ export default function BlogEditor({
     editorProps: {
       attributes: {
         class:
-          "min-h-[400px] px-5 py-4 outline-none prose max-w-none",
+          "min-h-[400px] px-5 py-4 outline-none",
       },
     },
 
     onUpdate({ editor }) {
-      onChange(editor.getJSON());
+      onChange(
+        editor.getJSON()
+      );
     },
   });
 
   useEffect(() => {
     if (editor) {
-      onChange(editor.getJSON());
+      onChange(
+        editor.getJSON()
+      );
     }
   }, [editor, onChange]);
 
@@ -66,38 +91,115 @@ export default function BlogEditor({
     return null;
   }
 
-  function addLink() {
-    const existingUrl =
-      editor?.getAttributes("link").href;
+  // Stable non-null editor reference
+  const currentEditor = editor;
 
-    const url = window.prompt(
-      "Enter URL",
-      existingUrl ?? ""
+  function openLinkInput() {
+    const selection =
+      currentEditor.state.selection;
+
+    if (!selection) {
+      return;
+    }
+
+    const from =
+      selection.from;
+
+    const to =
+      selection.to;
+
+    setLinkSelection({
+      from,
+      to,
+    });
+
+    const attributes =
+      currentEditor.getAttributes(
+        "link"
+      );
+
+    const existingUrl =
+      typeof attributes.href ===
+      "string"
+        ? attributes.href
+        : "";
+
+    setLinkUrl(
+      existingUrl
     );
 
-    if (url === null) {
+    setShowLinkInput(
+      true
+    );
+  }
+
+  function applyLink() {
+    const url =
+      linkUrl.trim();
+
+    if (!linkSelection) {
+      setShowLinkInput(
+        false
+      );
+
+      setLinkUrl("");
+
       return;
     }
 
-    if (url === "") {
-      editor?.chain()
-        .focus()
-        .extendMarkRange("link")
-        .unsetLink()
-        .run();
+    /*
+     * Restore the text selection because
+     * clicking the URL input moves focus
+     * away from the editor.
+     */
+    currentEditor.commands.setTextSelection({
+      from:
+        linkSelection.from,
+      to:
+        linkSelection.to,
+    });
 
-      return;
+    if (!url) {
+      currentEditor.commands.extendMarkRange(
+        "link"
+      );
+
+      currentEditor.commands.unsetLink();
+    } else {
+      currentEditor.commands.setLink({
+        href: url,
+      });
     }
 
-    editor?.chain()
-      .focus()
-      .extendMarkRange("link")
-      .setLink({ href: url })
-      .run();
+    currentEditor.commands.focus();
+
+    setShowLinkInput(
+      false
+    );
+
+    setLinkUrl("");
+
+    setLinkSelection(
+      null
+    );
+  }
+
+  function cancelLink() {
+    setShowLinkInput(
+      false
+    );
+
+    setLinkUrl("");
+
+    setLinkSelection(
+      null
+    );
+
+    currentEditor.commands.focus();
   }
 
   const buttonClass =
-    "theme-text rounded-md px-2 py-2 transition hover:opacity-70";
+    "theme-text rounded-md px-2 py-2 transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40";
 
   const activeClass =
     "theme-accent-bg text-white";
@@ -111,14 +213,16 @@ export default function BlogEditor({
           type="button"
           title="Bold"
           onClick={() =>
-            editor
+            currentEditor
               .chain()
               .focus()
               .toggleBold()
               .run()
           }
           className={`${buttonClass} ${
-            editor.isActive("bold")
+            currentEditor.isActive(
+              "bold"
+            )
               ? activeClass
               : ""
           }`}
@@ -130,14 +234,16 @@ export default function BlogEditor({
           type="button"
           title="Italic"
           onClick={() =>
-            editor
+            currentEditor
               .chain()
               .focus()
               .toggleItalic()
               .run()
           }
           className={`${buttonClass} ${
-            editor.isActive("italic")
+            currentEditor.isActive(
+              "italic"
+            )
               ? activeClass
               : ""
           }`}
@@ -149,7 +255,7 @@ export default function BlogEditor({
           type="button"
           title="Heading"
           onClick={() =>
-            editor
+            currentEditor
               .chain()
               .focus()
               .toggleHeading({
@@ -158,7 +264,7 @@ export default function BlogEditor({
               .run()
           }
           className={`${buttonClass} ${
-            editor.isActive(
+            currentEditor.isActive(
               "heading",
               {
                 level: 2,
@@ -168,21 +274,23 @@ export default function BlogEditor({
               : ""
           }`}
         >
-          <Heading2 size={18} />
+          <Heading2
+            size={18}
+          />
         </button>
 
         <button
           type="button"
           title="Bullet List"
           onClick={() =>
-            editor
+            currentEditor
               .chain()
               .focus()
               .toggleBulletList()
               .run()
           }
           className={`${buttonClass} ${
-            editor.isActive(
+            currentEditor.isActive(
               "bulletList"
             )
               ? activeClass
@@ -196,35 +304,37 @@ export default function BlogEditor({
           type="button"
           title="Numbered List"
           onClick={() =>
-            editor
+            currentEditor
               .chain()
               .focus()
               .toggleOrderedList()
               .run()
           }
           className={`${buttonClass} ${
-            editor.isActive(
+            currentEditor.isActive(
               "orderedList"
             )
               ? activeClass
               : ""
           }`}
         >
-          <ListOrdered size={18} />
+          <ListOrdered
+            size={18}
+          />
         </button>
 
         <button
           type="button"
           title="Quote"
           onClick={() =>
-            editor
+            currentEditor
               .chain()
               .focus()
               .toggleBlockquote()
               .run()
           }
           className={`${buttonClass} ${
-            editor.isActive(
+            currentEditor.isActive(
               "blockquote"
             )
               ? activeClass
@@ -237,14 +347,20 @@ export default function BlogEditor({
         <button
           type="button"
           title="Link"
-          onClick={addLink}
+          onClick={
+            openLinkInput
+          }
           className={`${buttonClass} ${
-            editor.isActive("link")
+            currentEditor.isActive(
+              "link"
+            )
               ? activeClass
               : ""
           }`}
         >
-          <LinkIcon size={18} />
+          <LinkIcon
+            size={18}
+          />
         </button>
 
         <div className="mx-1 w-px bg-current opacity-10" />
@@ -253,16 +369,20 @@ export default function BlogEditor({
           type="button"
           title="Undo"
           disabled={
-            !editor.can().undo()
+            !currentEditor
+              .can()
+              .undo()
           }
           onClick={() =>
-            editor
+            currentEditor
               .chain()
               .focus()
               .undo()
               .run()
           }
-          className={buttonClass}
+          className={
+            buttonClass
+          }
         >
           <Undo2 size={18} />
         </button>
@@ -271,23 +391,94 @@ export default function BlogEditor({
           type="button"
           title="Redo"
           disabled={
-            !editor.can().redo()
+            !currentEditor
+              .can()
+              .redo()
           }
           onClick={() =>
-            editor
+            currentEditor
               .chain()
               .focus()
               .redo()
               .run()
           }
-          className={buttonClass}
+          className={
+            buttonClass
+          }
         >
           <Redo2 size={18} />
         </button>
 
       </div>
 
-      <EditorContent editor={editor} />
+      {showLinkInput && (
+        <div className="theme-surface theme-border flex flex-col gap-2 border-b p-3 sm:flex-row">
+
+          <input
+            type="url"
+            value={linkUrl}
+            onChange={(
+              event
+            ) =>
+              setLinkUrl(
+                event.target
+                  .value
+              )
+            }
+            onKeyDown={(
+              event
+            ) => {
+              if (
+                event.key ===
+                "Enter"
+              ) {
+                event.preventDefault();
+
+                applyLink();
+              }
+
+              if (
+                event.key ===
+                "Escape"
+              ) {
+                event.preventDefault();
+
+                cancelLink();
+              }
+            }}
+            placeholder="https://example.com"
+            autoFocus
+            className="theme-bg theme-text theme-border min-w-0 flex-1 rounded-md border px-3 py-2 outline-none"
+          />
+
+          <button
+            type="button"
+            onClick={
+              applyLink
+            }
+            className="theme-accent-bg rounded-md px-4 py-2 text-white"
+          >
+            Apply
+          </button>
+
+          <button
+            type="button"
+            onClick={
+              cancelLink
+            }
+            className="theme-text theme-border rounded-md border px-4 py-2"
+          >
+            Cancel
+          </button>
+
+        </div>
+      )}
+
+      <EditorContent
+        editor={
+          currentEditor
+        }
+      />
 
     </div>
   );
