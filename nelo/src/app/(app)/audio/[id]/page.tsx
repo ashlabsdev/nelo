@@ -13,6 +13,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getAvatarSrc } from "@/lib/avatars";
 import { getPostMediaUrl } from "@/lib/media";
 
+import PostActions from "@/components/post/post-actions";
+
 type AudioPageProps = {
   params: Promise<{
     id: string;
@@ -50,11 +52,32 @@ export default async function AudioPage({
         hashtags (
           name
         )
+      ),
+
+      likes (
+        user_id
+      ),
+
+      comments (
+        id
+      ),
+
+      boosts (
+        user_id
       )
     `)
-    .eq("id", id)
-    .eq("type", "audio")
-    .eq("status", "active")
+    .eq(
+      "id",
+      id
+    )
+    .eq(
+      "type",
+      "audio"
+    )
+    .eq(
+      "status",
+      "active"
+    )
     .single();
 
   if (
@@ -84,7 +107,9 @@ export default async function AudioPage({
             relation.hashtags;
 
           if (
-            Array.isArray(tag)
+            Array.isArray(
+              tag
+            )
           ) {
             return tag;
           }
@@ -98,6 +123,22 @@ export default async function AudioPage({
         (tag) =>
           tag.name
       ) ?? [];
+
+  const likeUserIds =
+    post.likes?.map(
+      (like) =>
+        like.user_id
+    ) ?? [];
+
+  const boostUserIds =
+    post.boosts?.map(
+      (boost) =>
+        boost.user_id
+    ) ?? [];
+
+  const commentCount =
+    post.comments
+      ?.length ?? 0;
 
   const audioUrl =
     getPostMediaUrl(
@@ -121,8 +162,9 @@ export default async function AudioPage({
   return (
     <article className="mx-auto max-w-3xl">
 
-      <div className="flex items-center gap-3">
+      {/* Author */}
 
+      <div className="flex items-center gap-3">
         <Image
           src={getAvatarSrc(
             profile.avatar_id
@@ -143,14 +185,16 @@ export default async function AudioPage({
               size={14}
             />
 
-            {publishedDate}
+            <span>
+              {publishedDate}
+            </span>
           </div>
         </div>
-
       </div>
 
-      <div className="theme-surface theme-border mt-8 rounded-2xl border p-6">
+      {/* Audio */}
 
+      <div className="theme-surface theme-border mt-8 rounded-2xl border p-6">
         <AudioLines
           size={38}
           className="theme-accent"
@@ -161,12 +205,14 @@ export default async function AudioPage({
         </h1>
 
         <audio
-          controls preload="metadata"
+          controls
+          preload="metadata"
           src={audioUrl}
           className="mt-6 w-full"
         />
-
       </div>
+
+      {/* Description */}
 
       {post.content && (
         <p className="mt-6 whitespace-pre-line text-lg leading-8">
@@ -174,10 +220,10 @@ export default async function AudioPage({
         </p>
       )}
 
-      {hashtags.length >
-        0 && (
-        <div className="mt-5 flex flex-wrap gap-3">
+      {/* Hashtags */}
 
+      {hashtags.length > 0 && (
+        <div className="mt-5 flex flex-wrap gap-3">
           {hashtags.map(
             (tag) => (
               <span
@@ -188,9 +234,56 @@ export default async function AudioPage({
               </span>
             )
           )}
-
         </div>
       )}
+
+      {/* Common actions */}
+
+      <div className="mt-8">
+        <PostActions
+          postId={post.id}
+          postType="audio"
+          likeUserIds={
+            likeUserIds
+          }
+          commentCount={
+            commentCount
+          }
+          boostUserIds={
+            boostUserIds
+          }
+        />
+      </div>
+
+      {/* Author info */}
+
+      <div className="theme-surface theme-border mt-10 rounded-2xl border p-5">
+        <div className="flex items-center gap-4">
+          <Image
+            src={getAvatarSrc(
+              profile.avatar_id
+            )}
+            alt={
+              profile.username
+            }
+            width={56}
+            height={56}
+            className="h-14 w-14 rounded-full object-cover"
+          />
+
+          <div>
+            <p className="font-semibold">
+              {profile.username}
+            </p>
+
+            {profile.bio && (
+              <p className="theme-text-secondary mt-1 text-sm">
+                {profile.bio}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
 
     </article>
   );

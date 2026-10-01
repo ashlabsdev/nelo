@@ -29,18 +29,37 @@ export default async function BlogsPage() {
         hashtags (
           name
         )
+      ),
+
+      likes (
+        user_id
+      ),
+
+      comments (
+        id
+      ),
+
+      boosts (
+        user_id
       )
     `)
-    .eq("type", "blog")
-    .eq("status", "active")
+    .eq(
+      "type",
+      "blog"
+    )
+    .eq(
+      "status",
+      "active"
+    )
     .order(
       "created_at",
       {
-        ascending: false,
+        ascending:
+          false,
       }
     )
     .limit(20);
-
+    
   if (error) {
     console.error(
       "Blog feed error:",

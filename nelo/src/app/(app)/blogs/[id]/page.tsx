@@ -1,6 +1,8 @@
 import Image from "next/image";
 
-import { notFound } from "next/navigation";
+import {
+  notFound,
+} from "next/navigation";
 
 import {
   CalendarDays,
@@ -10,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAvatarSrc } from "@/lib/avatars";
 
 import BlogContent from "@/components/blog/blog-content";
+import PostActions from "@/components/post/post-actions";
 
 type BlogPageProps = {
   params: Promise<{
@@ -36,7 +39,6 @@ export default async function BlogPage({
       title,
       content_json,
       created_at,
-      user_id,
 
       profiles!posts_user_id_fkey (
         username,
@@ -48,11 +50,32 @@ export default async function BlogPage({
         hashtags (
           name
         )
+      ),
+
+      likes (
+        user_id
+      ),
+
+      comments (
+        id
+      ),
+
+      boosts (
+        user_id
       )
     `)
-    .eq("id", id)
-    .eq("type", "blog")
-    .eq("status", "active")
+    .eq(
+      "id",
+      id
+    )
+    .eq(
+      "type",
+      "blog"
+    )
+    .eq(
+      "status",
+      "active"
+    )
     .single();
 
   if (
@@ -64,7 +87,9 @@ export default async function BlogPage({
   }
 
   const profile =
-    Array.isArray(post.profiles)
+    Array.isArray(
+      post.profiles
+    )
       ? post.profiles[0]
       : post.profiles;
 
@@ -74,25 +99,44 @@ export default async function BlogPage({
 
   const hashtags =
     post.post_hashtags
-      ?.flatMap((relation) => {
-        const relationTag =
-          relation.hashtags;
+      ?.flatMap(
+        (relation) => {
+          const relationTag =
+            relation.hashtags;
 
-        if (
-          Array.isArray(
-            relationTag
-          )
-        ) {
-          return relationTag;
+          if (
+            Array.isArray(
+              relationTag
+            )
+          ) {
+            return relationTag;
+          }
+
+          return relationTag
+            ? [relationTag]
+            : [];
         }
-
-        return relationTag
-          ? [relationTag]
-          : [];
-      })
+      )
       .map(
-        (tag) => tag.name
+        (tag) =>
+          tag.name
       ) ?? [];
+
+  const likeUserIds =
+    post.likes?.map(
+      (like) =>
+        like.user_id
+    ) ?? [];
+
+  const boostUserIds =
+    post.boosts?.map(
+      (boost) =>
+        boost.user_id
+    ) ?? [];
+
+  const commentCount =
+    post.comments
+      ?.length ?? 0;
 
   const publishedDate =
     new Intl.DateTimeFormat(
@@ -103,7 +147,9 @@ export default async function BlogPage({
         year: "numeric",
       }
     ).format(
-      new Date(post.created_at)
+      new Date(
+        post.created_at
+      )
     );
 
   return (
@@ -112,16 +158,13 @@ export default async function BlogPage({
       {/* Title */}
 
       <header>
-
         <h1 className="text-4xl font-bold leading-tight sm:text-5xl">
           {post.title}
         </h1>
 
-
         {/* Author */}
 
         <div className="mt-7 flex items-center gap-3">
-
           <Image
             src={getAvatarSrc(
               profile.avatar_id
@@ -147,15 +190,12 @@ export default async function BlogPage({
               </span>
             </div>
           </div>
-
         </div>
-
 
         {/* Hashtags */}
 
         {hashtags.length > 0 && (
           <div className="mt-5 flex flex-wrap gap-3">
-
             {hashtags.map(
               (tag) => (
                 <span
@@ -166,19 +206,15 @@ export default async function BlogPage({
                 </span>
               )
             )}
-
           </div>
         )}
-
       </header>
-
 
       {/* Divider */}
 
       <div className="theme-border my-8 border-t" />
 
-
-      {/* Actual article */}
+      {/* Blog content */}
 
       <BlogContent
         content={
@@ -186,18 +222,35 @@ export default async function BlogPage({
         }
       />
 
+      {/* Post actions */}
 
-      {/* Author information */}
+      <div className="mt-10">
+        <PostActions
+          postId={post.id}
+          postType="blog"
+          likeUserIds={
+            likeUserIds
+          }
+          commentCount={
+            commentCount
+          }
+          boostUserIds={
+            boostUserIds
+          }
+        />
+      </div>
+
+      {/* Author info */}
 
       <div className="theme-surface theme-border mt-12 rounded-2xl border p-5">
-
         <div className="flex items-center gap-4">
-
           <Image
             src={getAvatarSrc(
               profile.avatar_id
             )}
-            alt={profile.username}
+            alt={
+              profile.username
+            }
             width={56}
             height={56}
             className="h-14 w-14 rounded-full object-cover"
@@ -214,9 +267,7 @@ export default async function BlogPage({
               </p>
             )}
           </div>
-
         </div>
-
       </div>
 
     </article>

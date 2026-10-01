@@ -4,9 +4,7 @@ import {
   Plus,
 } from "lucide-react";
 
-import {
-  createClient,
-} from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 import PhotoCard from "@/components/photo/photo-card";
 
@@ -34,6 +32,18 @@ export default async function PhotosPage() {
         hashtags (
           name
         )
+      ),
+
+      likes (
+        user_id
+      ),
+
+      comments (
+        id
+      ),
+
+      boosts (
+        user_id
       )
     `)
     .eq(
@@ -47,22 +57,10 @@ export default async function PhotosPage() {
     .order(
       "created_at",
       {
-        ascending:
-          false,
+        ascending: false,
       }
     )
     .limit(20);
-
-    const uniquePhotos =
-    photos?.filter(
-      (photo, index, array) =>
-        index ===
-        array.findIndex(
-          (item) =>
-            item.media_path ===
-            photo.media_path
-        )
-    ) ?? [];
 
   if (error) {
     console.error(
@@ -70,6 +68,28 @@ export default async function PhotosPage() {
       error
     );
   }
+
+  /*
+   * Defensive duplicate protection.
+   *
+   * If two database rows somehow point
+   * to the exact same uploaded image,
+   * only show it once.
+   */
+  const uniquePhotos =
+    photos?.filter(
+      (
+        photo,
+        index,
+        array
+      ) =>
+        index ===
+        array.findIndex(
+          (item) =>
+            item.media_path ===
+            photo.media_path
+        )
+    ) ?? [];
 
   return (
     <section className="mx-auto max-w-3xl">
@@ -90,9 +110,7 @@ export default async function PhotosPage() {
           href="/create/photo"
           className="theme-accent-bg flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white"
         >
-          <Plus
-            size={17}
-          />
+          <Plus size={17} />
 
           <span className="hidden sm:inline">
             Add Photo
@@ -103,6 +121,7 @@ export default async function PhotosPage() {
 
       {uniquePhotos.length === 0 ? (
         <div className="theme-surface theme-border mt-8 rounded-2xl border p-8 text-center">
+
           <h2 className="text-xl font-semibold">
             No photos yet
           </h2>
@@ -110,15 +129,20 @@ export default async function PhotosPage() {
           <p className="theme-text-secondary mt-2">
             Be the first person to share a photo.
           </p>
+
         </div>
       ) : (
         <div className="mt-8 space-y-6">
-          {uniquePhotos.map((photo) => (
-            <PhotoCard
-              key={photo.id}
-              photo={photo}
-            />
-          ))}
+
+          {uniquePhotos.map(
+            (photo) => (
+              <PhotoCard
+                key={photo.id}
+                photo={photo}
+              />
+            )
+          )}
+
         </div>
       )}
 

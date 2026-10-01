@@ -36,6 +36,7 @@ export default async function AppLayout({
 
   return (
     <AppShell
+      userId={profile.id}
       username={profile.username}
       avatarId={profile.avatar_id}
     >

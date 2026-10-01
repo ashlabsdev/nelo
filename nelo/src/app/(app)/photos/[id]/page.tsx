@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+import PostActions from "@/components/post/post-actions";
+
 import {
   notFound,
 } from "next/navigation";
@@ -33,22 +35,35 @@ export default async function PhotoPage({
   } = await supabase
     .from("posts")
     .select(`
-      id,
-      content,
-      media_path,
-      created_at,
+        id,
+        content,
+        media_path,
+        created_at,
 
-      profiles!posts_user_id_fkey (
-        username,
-        avatar_id,
-        bio
-      ),
+        profiles!posts_user_id_fkey (
+          username,
+          avatar_id,
+          bio
+        ),
 
-      post_hashtags (
-        hashtags (
-          name
+        post_hashtags (
+          hashtags (
+            name
+          )
+        ),
+
+        likes (
+          user_id
+        ),
+
+        comments (
+          id
+        ),
+
+        boosts (
+          user_id
         )
-      )
+
     `)
     .eq("id", id)
     .eq("type", "photo")
@@ -191,6 +206,29 @@ export default async function PhotoPage({
         </div>
       )}
 
+      <div className="mt-8">
+        <PostActions
+          postId={post.id}
+          postType="photo"
+          likeUserIds={
+            post.likes?.map(
+              (like) =>
+                like.user_id
+            ) ?? []
+          }
+          commentCount={
+            post.comments
+              ?.length ?? 0
+          }
+          boostUserIds={
+            post.boosts?.map(
+              (boost) =>
+                boost.user_id
+            ) ?? []
+          }
+        />
+      </div>
+      
     </article>
   );
 }

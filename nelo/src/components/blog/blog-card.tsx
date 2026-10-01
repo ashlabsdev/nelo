@@ -6,6 +6,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+import PostActions from "@/components/post/post-actions";
+
 import { getAvatarSrc } from "@/lib/avatars";
 import { createBlogPreview } from "@/lib/blog";
 
@@ -38,6 +40,18 @@ type BlogCardProps = {
         }[]
       | null;
 
+    likes?: {
+      user_id: string;
+    }[];
+
+    comments?: {
+      id: string;
+    }[];
+
+    boosts?: {
+      user_id: string;
+    }[];
+
     post_hashtags?:
       | HashtagRelation[]
       | null;
@@ -64,19 +78,23 @@ export default function BlogCard({
   const hashtags =
     blog.post_hashtags
       ?.flatMap((relation) => {
+        const relationHashtags =
+          relation.hashtags;
+
         if (
           Array.isArray(
-            relation.hashtags
+            relationHashtags
           )
         ) {
-          return relation.hashtags;
+          return relationHashtags;
         }
 
-        return relation.hashtags
-          ? [relation.hashtags]
+        return relationHashtags
+          ? [relationHashtags]
           : [];
       })
-      .map((tag) => tag.name) ?? [];
+      .map((tag) => tag.name) ??
+    [];
 
   const publishedDate =
     new Intl.DateTimeFormat(
@@ -87,8 +105,26 @@ export default function BlogCard({
         year: "numeric",
       }
     ).format(
-      new Date(blog.created_at)
+      new Date(
+        blog.created_at
+      )
     );
+
+  const likeUserIds =
+    blog.likes?.map(
+      (like) =>
+        like.user_id
+    ) ?? [];
+
+  const boostUserIds =
+    blog.boosts?.map(
+      (boost) =>
+        boost.user_id
+    ) ?? [];
+
+  const commentCount =
+    blog.comments?.length ??
+    0;
 
   return (
     <article className="theme-surface theme-border rounded-2xl border p-5 sm:p-6">
@@ -96,7 +132,6 @@ export default function BlogCard({
       {/* Author */}
 
       <div className="flex items-center gap-3">
-
         <Image
           src={getAvatarSrc(
             profile.avatar_id
@@ -120,14 +155,11 @@ export default function BlogCard({
             </span>
           </div>
         </div>
-
       </div>
-
 
       {/* Blog */}
 
       <div className="mt-5">
-
         <Link
           href={`/blogs/${blog.id}`}
         >
@@ -141,13 +173,12 @@ export default function BlogCard({
             {preview}
           </p>
         )}
-
       </div>
-
 
       {/* Hashtags */}
 
-      {hashtags.length > 0 && (
+      {hashtags.length >
+        0 && (
         <div className="mt-4 flex flex-wrap gap-2">
           {hashtags.map(
             (tag) => (
@@ -162,19 +193,37 @@ export default function BlogCard({
         </div>
       )}
 
+      {/* Read Blog */}
 
-      {/* Read more */}
-
-      <div className="theme-border mt-5 border-t pt-4">
-
+      <div className="mt-5">
         <Link
           href={`/blogs/${blog.id}`}
           className="theme-accent inline-flex items-center gap-2 text-sm font-medium"
         >
           Read Blog
-          <ArrowRight size={16} />
-        </Link>
 
+          <ArrowRight
+            size={16}
+          />
+        </Link>
+      </div>
+
+      {/* Shared actions */}
+
+      <div className="mt-5">
+        <PostActions
+          postId={blog.id}
+          postType="blog"
+          likeUserIds={
+            likeUserIds
+          }
+          commentCount={
+            commentCount
+          }
+          boostUserIds={
+            boostUserIds
+          }
+        />
       </div>
 
     </article>

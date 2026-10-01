@@ -4,9 +4,7 @@ import {
   Plus,
 } from "lucide-react";
 
-import {
-  createClient,
-} from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 import AudioCard from "@/components/audio/audio-card";
 
@@ -35,6 +33,18 @@ export default async function AudioPage() {
         hashtags (
           name
         )
+      ),
+
+      likes (
+        user_id
+      ),
+
+      comments (
+        id
+      ),
+
+      boosts (
+        user_id
       )
     `)
     .eq(
@@ -48,8 +58,7 @@ export default async function AudioPage() {
     .order(
       "created_at",
       {
-        ascending:
-          false,
+        ascending: false,
       }
     )
     .limit(20);
@@ -61,6 +70,9 @@ export default async function AudioPage() {
     );
   }
 
+  /*
+   * Defensive duplicate filtering.
+   */
   const uniqueAudio =
     audioPosts?.filter(
       (
@@ -87,8 +99,7 @@ export default async function AudioPage() {
           </h1>
 
           <p className="theme-text-secondary mt-2">
-            Listen to audio shared
-            by the NELO community.
+            Listen to audio shared by the NELO community.
           </p>
         </div>
 
@@ -102,10 +113,10 @@ export default async function AudioPage() {
             Add Audio
           </span>
         </Link>
+
       </div>
 
-      {uniqueAudio.length ===
-      0 ? (
+      {uniqueAudio.length === 0 ? (
         <div className="theme-surface theme-border mt-8 rounded-2xl border p-8 text-center">
 
           <h2 className="text-xl font-semibold">
@@ -113,8 +124,7 @@ export default async function AudioPage() {
           </h2>
 
           <p className="theme-text-secondary mt-2">
-            Be the first person
-            to share audio.
+            Be the first person to share audio.
           </p>
 
         </div>

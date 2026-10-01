@@ -5,13 +5,10 @@ import {
   CalendarDays,
 } from "lucide-react";
 
-import {
-  getAvatarSrc,
-} from "@/lib/avatars";
+import PostActions from "@/components/post/post-actions";
 
-import {
-  getPostMediaUrl,
-} from "@/lib/media";
+import { getAvatarSrc } from "@/lib/avatars";
+import { getPostMediaUrl } from "@/lib/media";
 
 type HashtagRelation = {
   hashtags:
@@ -36,8 +33,7 @@ type PhotoCardProps = {
       | string
       | null;
 
-    created_at:
-      string;
+    created_at: string;
 
     profiles:
       | {
@@ -53,6 +49,18 @@ type PhotoCardProps = {
     post_hashtags?:
       | HashtagRelation[]
       | null;
+
+    likes?: {
+      user_id: string;
+    }[];
+
+    comments?: {
+      id: string;
+    }[];
+
+    boosts?: {
+      user_id: string;
+    }[];
   };
 };
 
@@ -101,6 +109,22 @@ export default function PhotoCard({
           tag.name
       ) ?? [];
 
+  const likeUserIds =
+    photo.likes?.map(
+      (like) =>
+        like.user_id
+    ) ?? [];
+
+  const boostUserIds =
+    photo.boosts?.map(
+      (boost) =>
+        boost.user_id
+    ) ?? [];
+
+  const commentCount =
+    photo.comments?.length ??
+    0;
+
   const date =
     new Intl.DateTimeFormat(
       "en-IN",
@@ -114,6 +138,14 @@ export default function PhotoCard({
         photo.created_at
       )
     );
+
+  const description =
+    photo.content &&
+    photo.content.length > 300
+      ? `${photo.content
+          .slice(0, 300)
+          .trim()}...`
+      : photo.content;
 
   return (
     <article className="theme-surface theme-border overflow-hidden rounded-2xl border">
@@ -133,19 +165,18 @@ export default function PhotoCard({
         />
 
         <div>
-          <Link
-            href={`/users/${profile.username}`}
-            className="font-medium hover:underline"
-          >
+          <p className="font-medium">
             {profile.username}
-          </Link>
+          </p>
 
           <div className="theme-text-secondary mt-1 flex items-center gap-1 text-xs">
             <CalendarDays
               size={13}
             />
 
-            {date}
+            <span>
+              {date}
+            </span>
           </div>
         </div>
 
@@ -169,39 +200,65 @@ export default function PhotoCard({
         />
       </Link>
 
-      {/* Content */}
+      {/* Description */}
 
-      {(photo.content ||
-        hashtags.length >
-          0) && (
-        <div className="p-4 sm:p-5">
+      <div className="p-4 sm:p-5">
 
-          {photo.content && (
-            <p className="whitespace-pre-line leading-7">
-              {photo.content}
-            </p>
-          )}
+        {description && (
+          <p className="whitespace-pre-line leading-7">
+            {description}
+          </p>
+        )}
 
-          {hashtags.length >
-            0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
+        {/* Hashtags */}
 
-              {hashtags.map(
-                (tag) => (
-                  <span
-                    key={tag}
-                    className="theme-accent text-sm"
-                  >
-                    #{tag}
-                  </span>
-                )
-              )}
+        {hashtags.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
 
-            </div>
-          )}
+            {hashtags.map(
+              (tag) => (
+                <span
+                  key={tag}
+                  className="theme-accent text-sm"
+                >
+                  #{tag}
+                </span>
+              )
+            )}
 
+          </div>
+        )}
+
+        {/* Detail link */}
+
+        <div className="mt-4">
+          <Link
+            href={`/photos/${photo.id}`}
+            className="theme-accent text-sm font-medium"
+          >
+            View Photo
+          </Link>
         </div>
-      )}
+
+        {/* Common actions */}
+
+        <div className="mt-5">
+          <PostActions
+            postId={photo.id}
+            postType="photo"
+            likeUserIds={
+              likeUserIds
+            }
+            commentCount={
+              commentCount
+            }
+            boostUserIds={
+              boostUserIds
+            }
+          />
+        </div>
+
+      </div>
 
     </article>
   );
