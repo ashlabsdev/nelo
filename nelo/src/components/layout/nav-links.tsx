@@ -4,20 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import {
-  Home,
   FileText,
   ImageIcon,
   Headphones,
+  Heart,
   MessageCircle,
-  PlusCircle,
+  Bell,
 } from "lucide-react";
 
-export const navItems = [
-  {
-    name: "Home",
-    href: "/home",
-    icon: Home,
-  },
+const navItems = [
   {
     name: "Blogs",
     href: "/blogs",
@@ -33,16 +28,20 @@ export const navItems = [
     href: "/audio",
     icon: Headphones,
   },
- 
+  {
+    name: "Favorites",
+    href: "/favorites",
+    icon: Heart,
+  },
   {
     name: "Chat",
     href: "/chat",
     icon: MessageCircle,
   },
   {
-    name: "Create",
-    href: "/create",
-    icon: PlusCircle,
+    name: "Notifications",
+    href: "/notifications",
+    icon: Bell,
   },
 ];
 

@@ -1,13 +1,31 @@
-export default function CreatePhotoPage() {
+import { getCurrentProfile } from "@/lib/profile";
+
+import CreatePhotoForm from "@/components/photo/create-photo-form";
+
+export default async function CreatePhotoPage() {
+  const profile =
+    await getCurrentProfile();
+
+  if (!profile) {
+    return null;
+  }
+
   return (
-    <section>
+    <section className="mx-auto max-w-4xl">
+
       <h1 className="text-3xl font-bold">
-        Create Photo Post
+        Share a Photo
       </h1>
 
       <p className="theme-text-secondary mt-2">
-        Photo uploader coming on Day 10.
+        Upload a photo and share it
+        with the NELO community.
       </p>
+
+      <CreatePhotoForm
+        userId={profile.id}
+      />
+
     </section>
   );
 }

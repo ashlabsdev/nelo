@@ -22,7 +22,7 @@ export default async function CompleteProfilePage() {
   }
 
   if (!profile.username.startsWith("user_")) {
-    redirect("/home");
+    redirect("/blogs");
   }
 
   return (

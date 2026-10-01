@@ -23,7 +23,7 @@ export default function Navbar({
         {/* Logo */}
 
         <Link
-          href="/home"
+          href="/blogs"
           className="flex items-center"
         >
           <Image

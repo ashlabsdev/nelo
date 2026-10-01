@@ -46,7 +46,7 @@ export default function SignupPage() {
         "Account created. Check your email to confirm your account."
       );
     } else {
-      router.push("/home");
+      router.push("/blogs");
     }
 
     setLoading(false);

@@ -6,10 +6,10 @@ export async function GET(request: Request) {
 
   const code = searchParams.get("code");
 
-  let next = searchParams.get("next") ?? "/home";
+  let next = searchParams.get("next") ?? "/blogs";
 
   if (!next.startsWith("/")) {
-    next = "/home";
+    next = "/blogs";
   }
 
   if (code) {
