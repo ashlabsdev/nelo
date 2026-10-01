@@ -1,13 +1,31 @@
-export default function CreateAudioPage() {
+import { getCurrentProfile } from "@/lib/profile";
+
+import CreateAudioForm from "@/components/audio/create-audio-form";
+
+export default async function CreateAudioPage() {
+  const profile =
+    await getCurrentProfile();
+
+  if (!profile) {
+    return null;
+  }
+
   return (
-    <section>
+    <section className="mx-auto max-w-4xl">
+
       <h1 className="text-3xl font-bold">
-        Create Audio Post
+        Share Audio
       </h1>
 
       <p className="theme-text-secondary mt-2">
-        Audio uploader coming on Day 12.
+        Upload audio and share it
+        with the NELO community.
       </p>
+
+      <CreateAudioForm
+        userId={profile.id}
+      />
+
     </section>
   );
 }

@@ -53,6 +53,17 @@ export default async function PhotosPage() {
     )
     .limit(20);
 
+    const uniquePhotos =
+    photos?.filter(
+      (photo, index, array) =>
+        index ===
+        array.findIndex(
+          (item) =>
+            item.media_path ===
+            photo.media_path
+        )
+    ) ?? [];
+
   if (error) {
     console.error(
       "Photo feed error:",
@@ -90,11 +101,8 @@ export default async function PhotosPage() {
 
       </div>
 
-      {!photos ||
-      photos.length ===
-        0 ? (
+      {uniquePhotos.length === 0 ? (
         <div className="theme-surface theme-border mt-8 rounded-2xl border p-8 text-center">
-
           <h2 className="text-xl font-semibold">
             No photos yet
           </h2>
@@ -102,24 +110,15 @@ export default async function PhotosPage() {
           <p className="theme-text-secondary mt-2">
             Be the first person to share a photo.
           </p>
-
         </div>
       ) : (
         <div className="mt-8 space-y-6">
-
-          {photos.map(
-            (photo) => (
-              <PhotoCard
-                key={
-                  photo.id
-                }
-                photo={
-                  photo
-                }
-              />
-            )
-          )}
-
+          {uniquePhotos.map((photo) => (
+            <PhotoCard
+              key={photo.id}
+              photo={photo}
+            />
+          ))}
         </div>
       )}
 
