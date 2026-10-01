@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { convertImageToWebP } from "@/lib/image";
 
 import {
   ChangeEvent,
@@ -160,20 +161,38 @@ export default function CreatePhotoForm({
       return;
     }
 
+    let processedFile: File;
+
+    try {
+      processedFile =
+        await convertImageToWebP(
+          file
+        );
+    } catch {
+      setErrorMessage(
+        "Could not process the selected image."
+      );
+
+      setLoading(false);
+
+      return;
+    }
+
+
     setLoading(true);
 
     const supabase =
       createClient();
 
-    const extension =
-      file.name
-        .split(".")
-        .pop()
-        ?.toLowerCase() ??
-      "jpg";
+    // const extension =
+    //   file.name
+    //     .split(".")
+    //     .pop()
+    //     ?.toLowerCase() ??
+    //   "jpg";
 
     const fileName =
-      `${crypto.randomUUID()}.${extension}`;
+  `${crypto.randomUUID()}.webp`;
 
     const storagePath =
       `photos/${userId}/${fileName}`;
@@ -184,12 +203,15 @@ export default function CreatePhotoForm({
       .from("post-media")
       .upload(
         storagePath,
-        file,
+        processedFile,
         {
-          cacheControl: "3600",
+          cacheControl:
+            "3600",
+
           upsert: false,
+
           contentType:
-            file.type,
+            "image/webp",
         }
       );
 

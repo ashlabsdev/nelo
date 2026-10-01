@@ -4,9 +4,64 @@ import {
   Plus,
 } from "lucide-react";
 
-export default function PhotosPage() {
+import {
+  createClient,
+} from "@/lib/supabase/server";
+
+import PhotoCard from "@/components/photo/photo-card";
+
+export default async function PhotosPage() {
+  const supabase =
+    await createClient();
+
+  const {
+    data: photos,
+    error,
+  } = await supabase
+    .from("posts")
+    .select(`
+      id,
+      content,
+      media_path,
+      created_at,
+
+      profiles!posts_user_id_fkey (
+        username,
+        avatar_id
+      ),
+
+      post_hashtags (
+        hashtags (
+          name
+        )
+      )
+    `)
+    .eq(
+      "type",
+      "photo"
+    )
+    .eq(
+      "status",
+      "active"
+    )
+    .order(
+      "created_at",
+      {
+        ascending:
+          false,
+      }
+    )
+    .limit(20);
+
+  if (error) {
+    console.error(
+      "Photo feed error:",
+      error
+    );
+  }
+
   return (
-    <section className="mx-auto max-w-4xl">
+    <section className="mx-auto max-w-3xl">
 
       <div className="flex items-start justify-between gap-4">
 
@@ -24,7 +79,9 @@ export default function PhotosPage() {
           href="/create/photo"
           className="theme-accent-bg flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white"
         >
-          <Plus size={17} />
+          <Plus
+            size={17}
+          />
 
           <span className="hidden sm:inline">
             Add Photo
@@ -33,13 +90,38 @@ export default function PhotosPage() {
 
       </div>
 
-      <div className="theme-surface theme-border mt-8 rounded-2xl border p-8 text-center">
+      {!photos ||
+      photos.length ===
+        0 ? (
+        <div className="theme-surface theme-border mt-8 rounded-2xl border p-8 text-center">
 
-        <p className="theme-text-secondary">
-          Photo feed arrives on Day 11.
-        </p>
+          <h2 className="text-xl font-semibold">
+            No photos yet
+          </h2>
 
-      </div>
+          <p className="theme-text-secondary mt-2">
+            Be the first person to share a photo.
+          </p>
+
+        </div>
+      ) : (
+        <div className="mt-8 space-y-6">
+
+          {photos.map(
+            (photo) => (
+              <PhotoCard
+                key={
+                  photo.id
+                }
+                photo={
+                  photo
+                }
+              />
+            )
+          )}
+
+        </div>
+      )}
 
     </section>
   );
