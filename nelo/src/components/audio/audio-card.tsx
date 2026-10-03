@@ -67,6 +67,10 @@ type AudioCardProps = {
     boosts?: {
       user_id: string;
     }[];
+
+    favorites?: {
+      user_id: string;
+    }[];
   };
 };
 
@@ -266,6 +270,12 @@ export default function AudioCard({
           }
           boostUserIds={
             boostUserIds
+          }
+          favoriteUserIds={
+            audio.favorites?.map(
+              (favorite) =>
+                favorite.user_id
+            ) ?? []
           }
         />
       </div>

@@ -62,6 +62,10 @@ export default async function BlogPage({
 
       boosts (
         user_id
+      ),
+
+      favorites (
+        user_id
       )
     `)
     .eq(
@@ -236,6 +240,12 @@ export default async function BlogPage({
           }
           boostUserIds={
             boostUserIds
+          }
+          favoriteUserIds={
+            post.favorites?.map(
+              (favorite) =>
+                favorite.user_id
+            ) ?? []
           }
         />
       </div>

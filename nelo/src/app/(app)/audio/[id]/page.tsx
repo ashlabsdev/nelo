@@ -64,6 +64,10 @@ export default async function AudioPage({
 
       boosts (
         user_id
+      ),
+
+      favorites (
+        user_id
       )
     `)
     .eq(
@@ -251,6 +255,12 @@ export default async function AudioPage({
           }
           boostUserIds={
             boostUserIds
+          }
+          favoriteUserIds={
+            post.favorites?.map(
+              (favorite) =>
+                favorite.user_id
+            ) ?? []
           }
         />
       </div>

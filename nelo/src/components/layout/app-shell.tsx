@@ -3,6 +3,7 @@ import MobileNav from "@/components/layout/mobile-nav";
 import Footer from "@/components/layout/footer";
 
 import { CurrentUserProvider } from "@/components/auth/current-user-provider";
+import ScrollToTop from "@/components/layout/scroll-to-top";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -35,6 +36,8 @@ export default function AppShell({
         <Footer />
 
         <MobileNav />
+
+        <ScrollToTop />
 
       </div>
     </CurrentUserProvider>

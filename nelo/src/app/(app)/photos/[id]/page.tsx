@@ -62,7 +62,11 @@ export default async function PhotoPage({
 
         boosts (
           user_id
-        )
+        ),
+
+      favorites (
+        user_id
+      )
 
     `)
     .eq("id", id)
@@ -224,6 +228,12 @@ export default async function PhotoPage({
             post.boosts?.map(
               (boost) =>
                 boost.user_id
+            ) ?? []
+          }
+          favoriteUserIds={
+            post.favorites?.map(
+              (favorite) =>
+                favorite.user_id
             ) ?? []
           }
         />

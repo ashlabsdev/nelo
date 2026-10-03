@@ -10,6 +10,7 @@ import {
   Repeat2,
   Share2,
   Check,
+  Bookmark,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
@@ -33,6 +34,8 @@ type PostActionsProps = {
   commentCount: number;
 
   boostUserIds: string[];
+
+  favoriteUserIds: string[];
 };
 
 export default function PostActions({
@@ -42,6 +45,7 @@ export default function PostActions({
   commentCount:
     initialCommentCount,
   boostUserIds,
+  favoriteUserIds,
 }: PostActionsProps) {
   const { userId } =
     useCurrentUser();
@@ -56,11 +60,10 @@ export default function PostActions({
       userId
     );
 
-  const initialLikeCount =
-    likeUserIds.length;
-
-  const initialBoostCount =
-    boostUserIds.length;
+  const initialFavorited =
+    favoriteUserIds.includes(
+      userId
+    );
 
   const [
     liked,
@@ -73,7 +76,7 @@ export default function PostActions({
     likeCount,
     setLikeCount,
   ] = useState(
-    initialLikeCount
+    likeUserIds.length
   );
 
   const [
@@ -87,7 +90,14 @@ export default function PostActions({
     boostCount,
     setBoostCount,
   ] = useState(
-    initialBoostCount
+    boostUserIds.length
+  );
+
+  const [
+    favorited,
+    setFavorited,
+  ] = useState(
+    initialFavorited
   );
 
   const [
@@ -113,6 +123,11 @@ export default function PostActions({
   ] = useState(false);
 
   const [
+    favoriteLoading,
+    setFavoriteLoading,
+  ] = useState(false);
+
+  const [
     copied,
     setCopied,
   ] = useState(false);
@@ -130,9 +145,6 @@ export default function PostActions({
     const nextLiked =
       !liked;
 
-    /*
-     * Optimistic UI
-     */
     setLiked(
       nextLiked
     );
@@ -185,9 +197,6 @@ export default function PostActions({
     }
 
     if (error) {
-      /*
-       * Roll back optimistic UI
-       */
       setLiked(
         !nextLiked
       );
@@ -211,9 +220,7 @@ export default function PostActions({
       );
     }
 
-    setLikeLoading(
-      false
-    );
+    setLikeLoading(false);
   }
 
   async function toggleBoost() {
@@ -221,7 +228,9 @@ export default function PostActions({
       return;
     }
 
-    setBoostLoading(true);
+    setBoostLoading(
+      true
+    );
 
     const supabase =
       createClient();
@@ -229,9 +238,6 @@ export default function PostActions({
     const nextBoosted =
       !boosted;
 
-    /*
-     * Optimistic UI
-     */
     setBoosted(
       nextBoosted
     );
@@ -284,9 +290,6 @@ export default function PostActions({
     }
 
     if (error) {
-      /*
-       * Roll back optimistic UI
-       */
       setBoosted(
         !nextBoosted
       );
@@ -315,6 +318,81 @@ export default function PostActions({
     );
   }
 
+  async function toggleFavorite() {
+    if (
+      favoriteLoading
+    ) {
+      return;
+    }
+
+    setFavoriteLoading(
+      true
+    );
+
+    const supabase =
+      createClient();
+
+    const nextFavorited =
+      !favorited;
+
+    setFavorited(
+      nextFavorited
+    );
+
+    let error = null;
+
+    if (nextFavorited) {
+      const result =
+        await supabase
+          .from(
+            "favorites"
+          )
+          .insert({
+            user_id:
+              userId,
+
+            post_id:
+              postId,
+          });
+
+      error =
+        result.error;
+    } else {
+      const result =
+        await supabase
+          .from(
+            "favorites"
+          )
+          .delete()
+          .eq(
+            "user_id",
+            userId
+          )
+          .eq(
+            "post_id",
+            postId
+          );
+
+      error =
+        result.error;
+    }
+
+    if (error) {
+      setFavorited(
+        !nextFavorited
+      );
+
+      console.error(
+        "Favorite error:",
+        error
+      );
+    }
+
+    setFavoriteLoading(
+      false
+    );
+  }
+
   function getPostPath() {
     switch (postType) {
       case "blog":
@@ -329,11 +407,8 @@ export default function PostActions({
   }
 
   async function sharePost() {
-    const postPath =
-      getPostPath();
-
     const url =
-      `${window.location.origin}${postPath}`;
+      `${window.location.origin}${getPostPath()}`;
 
     try {
       if (
@@ -362,10 +437,6 @@ export default function PostActions({
         2000
       );
     } catch (error) {
-      /*
-       * Cancelling a native
-       * share sheet is normal.
-       */
       console.log(
         "Share cancelled:",
         error
@@ -378,11 +449,10 @@ export default function PostActions({
 
   return (
     <div>
-      {/* Actions */}
 
       <div className="theme-border flex flex-wrap items-center gap-2 border-t pt-4">
 
-        {/* Like */}
+        {/* LIKE */}
 
         <button
           type="button"
@@ -392,16 +462,16 @@ export default function PostActions({
           onClick={
             toggleLike
           }
-          className={`${normalButton} ${
-            liked
-              ? "theme-accent"
-              : ""
-          }`}
           title={
             liked
               ? "Unlike"
               : "Like"
           }
+          className={`${normalButton} ${
+            liked
+              ? "theme-accent"
+              : ""
+          }`}
         >
           <Heart
             size={19}
@@ -417,7 +487,7 @@ export default function PostActions({
           </span>
         </button>
 
-        {/* Comments */}
+        {/* COMMENTS */}
 
         <button
           type="button"
@@ -429,8 +499,8 @@ export default function PostActions({
                 !current
             )
           }
-          className={normalButton}
           title="Comments"
+          className={normalButton}
         >
           <MessageCircle
             size={19}
@@ -441,7 +511,7 @@ export default function PostActions({
           </span>
         </button>
 
-        {/* Boost */}
+        {/* BOOST */}
 
         <button
           type="button"
@@ -451,16 +521,16 @@ export default function PostActions({
           onClick={
             toggleBoost
           }
-          className={`${normalButton} ${
-            boosted
-              ? "theme-accent"
-              : ""
-          }`}
           title={
             boosted
               ? "Remove boost"
               : "Boost"
           }
+          className={`${normalButton} ${
+            boosted
+              ? "theme-accent"
+              : ""
+          }`}
         >
           <Repeat2
             size={20}
@@ -471,15 +541,46 @@ export default function PostActions({
           </span>
         </button>
 
-        {/* Share */}
+        {/* FAVORITE */}
+
+        <button
+          type="button"
+          disabled={
+            favoriteLoading
+          }
+          onClick={
+            toggleFavorite
+          }
+          title={
+            favorited
+              ? "Remove from favorites"
+              : "Add to favorites"
+          }
+          className={`${normalButton} ${
+            favorited
+              ? "theme-accent"
+              : ""
+          }`}
+        >
+          <Bookmark
+            size={19}
+            fill={
+              favorited
+                ? "currentColor"
+                : "none"
+            }
+          />
+        </button>
+
+        {/* SHARE */}
 
         <button
           type="button"
           onClick={
             sharePost
           }
-          className={`${normalButton} ml-auto`}
           title="Share"
+          className={`${normalButton} ml-auto`}
         >
           {copied ? (
             <Check
@@ -500,8 +601,6 @@ export default function PostActions({
 
       </div>
 
-      {/* Comments */}
-
       {showComments && (
         <CommentsPanel
           postId={postId}
@@ -521,6 +620,7 @@ export default function PostActions({
           }
         />
       )}
+
     </div>
   );
 }

@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+
+import {
+  usePathname,
+} from "next/navigation";
 
 import {
   FileText,
@@ -16,67 +19,110 @@ const navItems = [
   {
     name: "Blogs",
     href: "/blogs",
+    activePaths: [
+      "/blogs",
+      "/create/blog",
+    ],
     icon: FileText,
   },
   {
     name: "Photos",
     href: "/photos",
+    activePaths: [
+      "/photos",
+      "/create/photo",
+    ],
     icon: ImageIcon,
   },
   {
     name: "Audio",
     href: "/audio",
+    activePaths: [
+      "/audio",
+      "/create/audio",
+    ],
     icon: Headphones,
   },
   {
     name: "Favorites",
     href: "/favorites",
+    activePaths: [
+      "/favorites",
+    ],
     icon: Heart,
   },
   {
     name: "Chat",
     href: "/chat",
+    activePaths: [
+      "/chat",
+    ],
     icon: MessageCircle,
   },
   {
     name: "Notifications",
     href: "/notifications",
+    activePaths: [
+      "/notifications",
+    ],
     icon: Bell,
   },
 ];
 
 export default function NavLinks() {
-  const pathname = usePathname();
+  const pathname =
+    usePathname();
+
+  function isActive(
+    paths: string[]
+  ) {
+    return paths.some(
+      (path) =>
+        pathname === path ||
+        pathname.startsWith(
+          `${path}/`
+        )
+    );
+  }
 
   return (
-    <>
-      {navItems.map((item) => {
-        const Icon = item.icon;
+    <nav className="flex items-center gap-1">
 
-        const active =
-          pathname === item.href;
+      {navItems.map(
+        (item) => {
+          const Icon =
+            item.icon;
 
-        const isCreate =
-          item.href === "/create";
+          const active =
+            isActive(
+              item.activePaths
+            );
+
 
         return (
           <Link
             key={item.href}
             href={item.href}
-            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${
-              isCreate
-                ? "theme-accent-bg text-white"
-                : active
-                  ? "theme-accent font-semibold"
-                  : "theme-text-secondary"
-            }`}
+            className="flex items-center rounded-lg px-2 py-1.5 text-sm"
           >
-            <Icon size={18} />
+            <span
+              className={`flex items-center gap-2 rounded-md px-2 py-1 transition ${
+                active
+                  ? "theme-accent-bg text-white"
+                  : "theme-text-secondary hover:opacity-70"
+              }`}
+            >
+              <Icon size={17} />
 
-            <span>{item.name}</span>
+              <span>
+                {item.name}
+              </span>
+            </span>
           </Link>
         );
-      })}
-    </>
+        }
+      )}
+
+    </nav>
   );
 }

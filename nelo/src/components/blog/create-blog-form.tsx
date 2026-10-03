@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import BlogEditor from "@/components/blog/blog-editor";
 
@@ -375,7 +376,15 @@ export default function CreateBlogForm({
 
       {/* Publish */}
 
-      <div className="mt-8 flex justify-end">
+      <div className="flex items-center justify-end gap-3">
+
+        <Link
+          href="/blogs"
+          className="theme-text theme-border rounded-lg border px-5 py-3 text-sm font-medium transition hover:opacity-70"
+        >
+          Cancel
+        </Link>
+
         <button
           type="submit"
           disabled={loading}
@@ -385,6 +394,7 @@ export default function CreateBlogForm({
             ? "Publishing..."
             : "Publish Blog"}
         </button>
+
       </div>
     </form>
   );

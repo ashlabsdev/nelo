@@ -41,6 +41,10 @@ export default async function BlogsPage() {
 
       boosts (
         user_id
+      ),
+
+      favorites (
+        user_id
       )
     `)
     .eq(

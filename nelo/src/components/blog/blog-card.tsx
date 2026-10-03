@@ -52,6 +52,10 @@ type BlogCardProps = {
       user_id: string;
     }[];
 
+    favorites?: {
+          user_id: string;
+        }[];
+
     post_hashtags?:
       | HashtagRelation[]
       | null;
@@ -222,6 +226,12 @@ export default function BlogCard({
           }
           boostUserIds={
             boostUserIds
+          }
+          favoriteUserIds={
+            blog.favorites?.map(
+              (favorite) =>
+                favorite.user_id
+            ) ?? []
           }
         />
       </div>

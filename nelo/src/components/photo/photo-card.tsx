@@ -61,6 +61,10 @@ type PhotoCardProps = {
     boosts?: {
       user_id: string;
     }[];
+
+    favorites?: {
+      user_id: string;
+    }[];
   };
 };
 
@@ -254,6 +258,12 @@ export default function PhotoCard({
             }
             boostUserIds={
               boostUserIds
+            }
+            favoriteUserIds={
+              photo.favorites?.map(
+                (favorite) =>
+                  favorite.user_id
+              ) ?? []
             }
           />
         </div>

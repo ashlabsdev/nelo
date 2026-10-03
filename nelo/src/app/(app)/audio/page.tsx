@@ -45,6 +45,10 @@ export default async function AudioPage() {
 
       boosts (
         user_id
+      ),
+
+      favorites (
+        user_id
       )
     `)
     .eq(
@@ -136,6 +140,7 @@ export default async function AudioPage() {
               <AudioCard
                 key={audio.id}
                 audio={audio}
+                
               />
             )
           )}

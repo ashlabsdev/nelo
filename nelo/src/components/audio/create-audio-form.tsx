@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   ChangeEvent,
   FormEvent,
@@ -575,7 +577,14 @@ export default function CreateAudioForm({
         </p>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-end gap-3">
+        <Link
+          href="/audio"
+          className="theme-text theme-border rounded-lg border px-5 py-3 text-sm font-medium transition hover:opacity-70"
+        >
+          Cancel
+        </Link>
+        
         <button
           type="submit"
           disabled={loading}

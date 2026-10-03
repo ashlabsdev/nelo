@@ -44,6 +44,10 @@ export default async function PhotosPage() {
 
       boosts (
         user_id
+      ),
+
+      favorites (
+        user_id
       )
     `)
     .eq(
