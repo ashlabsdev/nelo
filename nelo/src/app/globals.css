@@ -39,6 +39,46 @@ html[data-theme="warm"] {
   --border: #fed7aa;
 }
 
+/* Ocean */
+html[data-theme="ocean"] {
+  --background: #f0f9ff;
+  --surface: #e0f2fe;
+  --primary-text: #0c4a6e;
+  --secondary-text: #52758a;
+  --accent: #0284c7;
+  --border: #bae6fd;
+}
+
+/* Grape */
+html[data-theme="grape"] {
+  --background: #faf5ff;
+  --surface: #f3e8ff;
+  --primary-text: #581c87;
+  --secondary-text: #7e5a94;
+  --accent: #9333ea;
+  --border: #e9d5ff;
+}
+
+/* Rose */
+html[data-theme="rose"] {
+  --background: #fff1f2;
+  --surface: #ffe4e6;
+  --primary-text: #881337;
+  --secondary-text: #9f5f72;
+  --accent: #e11d48;
+  --border: #fecdd3;
+}
+
+/* Graphite */
+html[data-theme="graphite"] {
+  --background: #18181b;
+  --surface: #27272a;
+  --primary-text: #fafafa;
+  --secondary-text: #a1a1aa;
+  --accent: #94a3b8;
+  --border: #3f3f46;
+}
+
 html,
 body {
   margin: 0;

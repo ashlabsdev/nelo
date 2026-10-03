@@ -136,29 +136,44 @@ export default function BlogCard({
       {/* Author */}
 
       <div className="flex items-center gap-3">
-        <Image
-          src={getAvatarSrc(
-            profile.avatar_id
-          )}
-          alt={`${profile.username} avatar`}
-          width={44}
-          height={44}
-          className="h-11 w-11 rounded-full object-cover"
-        />
+
+        <Link
+          href={`/users/${profile.username}`}
+        >
+          <Image
+            src={getAvatarSrc(
+              profile.avatar_id
+            )}
+            alt={`${profile.username} avatar`}
+            width={44}
+            height={44}
+            className="h-11 w-11 rounded-full object-cover transition hover:opacity-80"
+          />
+        </Link>
 
         <div>
-          <p className="font-medium">
-            {profile.username}
-          </p>
+
+          <Link
+            href={`/users/${profile.username}`}
+            className="font-medium hover:underline"
+          >
+            {
+              profile.username
+            }
+          </Link>
 
           <div className="theme-text-secondary mt-1 flex items-center gap-1 text-xs">
-            <Clock size={13} />
+            <Clock
+              size={13}
+            />
 
             <span>
               {publishedDate}
             </span>
           </div>
+
         </div>
+
       </div>
 
       {/* Blog */}

@@ -1,10 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import {
-  CalendarDays,
-  ExternalLink,
-} from "lucide-react";
+import { CalendarDays, ExternalLink } from "lucide-react";
 
 import PostActions from "@/components/post/post-actions";
 
@@ -26,20 +23,13 @@ type AudioCardProps = {
   audio: {
     id: string;
 
-    title:
-      | string
-      | null;
+    title: string | null;
 
-    content:
-      | string
-      | null;
+    content: string | null;
 
-    media_path:
-      | string
-      | null;
+    media_path: string | null;
 
-    created_at:
-      string;
+    created_at: string;
 
     profiles:
       | {
@@ -52,9 +42,7 @@ type AudioCardProps = {
         }[]
       | null;
 
-    post_hashtags?:
-      | HashtagRelation[]
-      | null;
+    post_hashtags?: HashtagRelation[] | null;
 
     likes?: {
       user_id: string;
@@ -74,130 +62,82 @@ type AudioCardProps = {
   };
 };
 
-export default function AudioCard({
-  audio,
-}: AudioCardProps) {
-  const profile =
-    Array.isArray(
-      audio.profiles
-    )
-      ? audio.profiles[0]
-      : audio.profiles;
+export default function AudioCard({ audio }: AudioCardProps) {
+  const profile = Array.isArray(audio.profiles)
+    ? audio.profiles[0]
+    : audio.profiles;
 
-  if (
-    !profile ||
-    !audio.media_path
-  ) {
+  if (!profile || !audio.media_path) {
     return null;
   }
 
-  const audioUrl =
-    getPostMediaUrl(
-      audio.media_path
-    );
+  const audioUrl = getPostMediaUrl(audio.media_path);
 
   const hashtags =
     audio.post_hashtags
-      ?.flatMap(
-        (relation) => {
-          const tag =
-            relation.hashtags;
+      ?.flatMap((relation) => {
+        const tag = relation.hashtags;
 
-          if (
-            Array.isArray(tag)
-          ) {
-            return tag;
-          }
-
-          return tag
-            ? [tag]
-            : [];
+        if (Array.isArray(tag)) {
+          return tag;
         }
-      )
-      .map(
-        (tag) =>
-          tag.name
-      ) ?? [];
 
-  const likeUserIds =
-    audio.likes?.map(
-      (like) =>
-        like.user_id
-    ) ?? [];
+        return tag ? [tag] : [];
+      })
+      .map((tag) => tag.name) ?? [];
 
-  const boostUserIds =
-    audio.boosts?.map(
-      (boost) =>
-        boost.user_id
-    ) ?? [];
+  const likeUserIds = audio.likes?.map((like) => like.user_id) ?? [];
 
-  const commentCount =
-    audio.comments?.length ??
-    0;
+  const boostUserIds = audio.boosts?.map((boost) => boost.user_id) ?? [];
 
-  const publishedDate =
-    new Intl.DateTimeFormat(
-      "en-IN",
-      {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }
-    ).format(
-      new Date(
-        audio.created_at
-      )
-    );
+  const commentCount = audio.comments?.length ?? 0;
+
+  const publishedDate = new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(audio.created_at));
 
   const description =
-    audio.content &&
-    audio.content.length > 300
-      ? `${audio.content
-          .slice(0, 300)
-          .trim()}...`
+    audio.content && audio.content.length > 300
+      ? `${audio.content.slice(0, 300).trim()}...`
       : audio.content;
 
   return (
     <article className="theme-surface theme-border rounded-2xl border p-5 sm:p-6">
-
       {/* Author */}
 
       <div className="flex items-center gap-3">
-
-        <Image
-          src={getAvatarSrc(
-            profile.avatar_id
-          )}
-          alt={`${profile.username} avatar`}
-          width={44}
-          height={44}
-          className="h-11 w-11 rounded-full object-cover"
-        />
+        <Link href={`/users/${profile.username}`}>
+          <Image
+            src={getAvatarSrc(profile.avatar_id)}
+            alt={`${profile.username} avatar`}
+            width={44}
+            height={44}
+            className="h-11 w-11 rounded-full object-cover transition hover:opacity-80"
+          />
+        </Link>
 
         <div>
-          <p className="font-medium">
+          <Link
+            href={`/users/${profile.username}`}
+            className="font-medium hover:underline"
+          >
             {profile.username}
-          </p>
+          </Link>
 
           <div className="theme-text-secondary mt-1 flex items-center gap-1 text-xs">
-            <CalendarDays
-              size={13}
-            />
+            <CalendarDays size={13} />
 
-            <span>
-              {publishedDate}
-            </span>
+            {publishedDate}
           </div>
         </div>
-
       </div>
 
       {/* Title */}
 
       <div className="mt-5">
-        <Link
-          href={`/audio/${audio.id}`}
-        >
+        <Link href={`/audio/${audio.id}`}>
           <h2 className="text-2xl font-bold transition hover:opacity-70">
             {audio.title}
           </h2>
@@ -223,21 +163,13 @@ export default function AudioCard({
 
       {/* Hashtags */}
 
-      {hashtags.length >
-        0 && (
+      {hashtags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2">
-
-          {hashtags.map(
-            (tag) => (
-              <span
-                key={tag}
-                className="theme-accent text-sm"
-              >
-                #{tag}
-              </span>
-            )
-          )}
-
+          {hashtags.map((tag) => (
+            <span key={tag} className="theme-accent text-sm">
+              #{tag}
+            </span>
+          ))}
         </div>
       )}
 
@@ -249,10 +181,7 @@ export default function AudioCard({
           className="theme-accent inline-flex items-center gap-2 text-sm font-medium"
         >
           Open Audio
-
-          <ExternalLink
-            size={15}
-          />
+          <ExternalLink size={15} />
         </Link>
       </div>
 
@@ -262,24 +191,14 @@ export default function AudioCard({
         <PostActions
           postId={audio.id}
           postType="audio"
-          likeUserIds={
-            likeUserIds
-          }
-          commentCount={
-            commentCount
-          }
-          boostUserIds={
-            boostUserIds
-          }
+          likeUserIds={likeUserIds}
+          commentCount={commentCount}
+          boostUserIds={boostUserIds}
           favoriteUserIds={
-            audio.favorites?.map(
-              (favorite) =>
-                favorite.user_id
-            ) ?? []
+            audio.favorites?.map((favorite) => favorite.user_id) ?? []
           }
         />
       </div>
-
     </article>
   );
 }

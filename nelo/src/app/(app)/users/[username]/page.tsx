@@ -2,8 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 
 import {
+  notFound,
+  redirect,
+} from "next/navigation";
+
+import {
   ExternalLink,
-  Pencil,
   Users,
   UserRoundCheck,
   FileText,
@@ -11,22 +15,120 @@ import {
   Headphones,
 } from "lucide-react";
 
+import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/profile";
 import { getAvatarSrc } from "@/lib/avatars";
-import { createClient } from "@/lib/supabase/server";
 
-import LogoutButton from "@/components/auth/logout-button";
+import FollowButton from "@/components/profile/follow-button";
+import BlockButton from "@/components/profile/block-button";
 
-export default async function ProfilePage() {
-  const profile =
+type PublicProfilePageProps = {
+  params: Promise<{
+    username: string;
+  }>;
+};
+
+export default async function PublicProfilePage({
+  params,
+}: PublicProfilePageProps) {
+  const {
+    username,
+  } = await params;
+
+  const currentProfile =
     await getCurrentProfile();
 
-  if (!profile) {
+  if (!currentProfile) {
     return null;
+  }
+
+  if (
+    currentProfile.username ===
+    username
+  ) {
+    redirect(
+      "/profile"
+    );
   }
 
   const supabase =
     await createClient();
+
+  const {
+    data: profile,
+    error:
+      profileError,
+  } = await supabase
+    .from("profiles")
+    .select(`
+      id,
+      username,
+      avatar_id,
+      bio,
+      website_url,
+      link_2,
+      link_3
+    `)
+    .eq(
+      "username",
+      username
+    )
+    .single();
+
+  if (
+    profileError ||
+    !profile
+  ) {
+    notFound();
+  }
+
+  /*
+   * Check whether either user
+   * has blocked the other.
+   */
+
+  const [
+    iBlockedThem,
+    theyBlockedMe,
+  ] = await Promise.all([
+
+    supabase
+      .from("blocks")
+      .select(
+        "blocker_id"
+      )
+      .eq(
+        "blocker_id",
+        currentProfile.id
+      )
+      .eq(
+        "blocked_id",
+        profile.id
+      )
+      .maybeSingle(),
+
+    supabase
+      .from("blocks")
+      .select(
+        "blocker_id"
+      )
+      .eq(
+        "blocker_id",
+        profile.id
+      )
+      .eq(
+        "blocked_id",
+        currentProfile.id
+      )
+      .maybeSingle(),
+  ]);
+
+  if (
+    iBlockedThem.data ||
+    theyBlockedMe.data
+  ) {
+    notFound();
+  }
 
   const [
     followersResult,
@@ -34,11 +136,9 @@ export default async function ProfilePage() {
     blogsResult,
     photosResult,
     audioResult,
+    followingCheck,
   ] = await Promise.all([
 
-    /*
-     * Followers
-     */
     supabase
       .from("follows")
       .select("*", {
@@ -50,9 +150,6 @@ export default async function ProfilePage() {
         profile.id
       ),
 
-    /*
-     * Following
-     */
     supabase
       .from("follows")
       .select("*", {
@@ -64,9 +161,6 @@ export default async function ProfilePage() {
         profile.id
       ),
 
-    /*
-     * Blogs
-     */
     supabase
       .from("posts")
       .select("*", {
@@ -86,9 +180,6 @@ export default async function ProfilePage() {
         "active"
       ),
 
-    /*
-     * Photos
-     */
     supabase
       .from("posts")
       .select("*", {
@@ -108,9 +199,6 @@ export default async function ProfilePage() {
         "active"
       ),
 
-    /*
-     * Audio
-     */
     supabase
       .from("posts")
       .select("*", {
@@ -129,6 +217,21 @@ export default async function ProfilePage() {
         "status",
         "active"
       ),
+
+    supabase
+      .from("follows")
+      .select(
+        "follower_id"
+      )
+      .eq(
+        "follower_id",
+        currentProfile.id
+      )
+      .eq(
+        "following_id",
+        profile.id
+      )
+      .maybeSingle(),
   ]);
 
   const followers =
@@ -151,6 +254,11 @@ export default async function ProfilePage() {
     audioResult.count ??
     0;
 
+  const isFollowing =
+    Boolean(
+      followingCheck.data
+    );
+
   const links = [
     profile.website_url,
     profile.link_2,
@@ -162,7 +270,7 @@ export default async function ProfilePage() {
   return (
     <section className="mx-auto max-w-3xl">
 
-      {/* Profile header */}
+      {/* Profile */}
 
       <div className="theme-surface theme-border rounded-2xl border p-6 sm:p-8">
 
@@ -180,36 +288,21 @@ export default async function ProfilePage() {
 
           <div className="flex-1">
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-3xl font-bold">
+              {
+                profile.username
+              }
+            </h1>
 
-              <div>
-                <h1 className="text-3xl font-bold">
-                  {
-                    profile.username
-                  }
-                </h1>
-
-                <p className="theme-text-secondary mt-1 text-sm">
-                  NELO Profile
-                </p>
-              </div>
-
-              <Link
-                href="/profile/edit"
-                className="theme-accent-bg inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white"
-              >
-                <Pencil
-                  size={16}
-                />
-
-                Edit Profile
-              </Link>
-
-            </div>
+            <p className="theme-text-secondary mt-1 text-sm">
+              NELO Profile
+            </p>
 
             {profile.bio ? (
               <p className="theme-text-secondary mt-5 whitespace-pre-line">
-                {profile.bio}
+                {
+                  profile.bio
+                }
               </p>
             ) : (
               <p className="theme-text-secondary mt-5 italic">
@@ -217,13 +310,34 @@ export default async function ProfilePage() {
               </p>
             )}
 
+            {/* Actions */}
+
+            <div className="mt-6 flex flex-wrap gap-3">
+
+              <FollowButton
+                targetUserId={
+                  profile.id
+                }
+                initialFollowing={
+                  isFollowing
+                }
+              />
+
+              <BlockButton
+                targetUserId={
+                  profile.id
+                }
+              />
+
+            </div>
+
           </div>
 
         </div>
 
-        {/* Followers / Following */}
+        {/* Follow counts */}
 
-        <div className="theme-border mt-8 flex flex-wrap gap-8 border-t pt-6">
+        <div className="theme-border mt-8 flex gap-8 border-t pt-6">
 
           <Link
             href={`/users/${profile.username}/followers`}
@@ -269,7 +383,7 @@ export default async function ProfilePage() {
 
       </div>
 
-      {/* Content statistics */}
+      {/* Content stats */}
 
       <div className="mt-8">
 
@@ -360,7 +474,6 @@ export default async function ProfilePage() {
 
                   <ExternalLink
                     size={16}
-                    className="shrink-0"
                   />
                 </a>
               )
@@ -370,20 +483,6 @@ export default async function ProfilePage() {
 
         </div>
       )}
-
-      {/* Account */}
-
-      <div className="theme-border mt-10 border-t pt-6">
-
-        <h2 className="text-lg font-semibold">
-          Account
-        </h2>
-
-        <div className="mt-4">
-          <LogoutButton />
-        </div>
-
-      </div>
 
     </section>
   );

@@ -4,8 +4,8 @@ import Link from "next/link";
 import NavLinks from "./nav-links";
 import LogoutButton from "@/components/auth/logout-button";
 
-import ThemeSelector from "@/components/theme/theme-selector";
 import { getAvatarSrc } from "@/lib/avatars";
+import ThemeQuickSwitch from "../theme/theme-quick-switch";
 
 type NavbarProps = {
   username: string;
@@ -45,7 +45,7 @@ export default function Navbar({
         {/* Right section */}
 
         <div className="flex items-center gap-4">
-          <ThemeSelector />
+          <ThemeQuickSwitch />
 
           <Link
             href="/profile"
