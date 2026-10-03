@@ -5,12 +5,26 @@ import {
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/profile";
+import { getBlockedUserIds } from "@/lib/blocks";
 
 import PhotoCard from "@/components/photo/photo-card";
 
 export default async function PhotosPage() {
+  const profile =
+    await getCurrentProfile();
+
+  if (!profile) {
+    return null;
+  }
+
   const supabase =
     await createClient();
+
+  const blockedUserIds =
+    await getBlockedUserIds(
+      profile.id,
+    );
 
   const {
     data: photos,
@@ -19,6 +33,7 @@ export default async function PhotosPage() {
     .from("posts")
     .select(`
       id,
+      user_id,
       content,
       media_path,
       created_at,
@@ -52,48 +67,56 @@ export default async function PhotosPage() {
     `)
     .eq(
       "type",
-      "photo"
+      "photo",
     )
     .eq(
       "status",
-      "active"
+      "active",
     )
     .order(
       "created_at",
       {
         ascending: false,
-      }
+      },
     )
     .limit(20);
 
   if (error) {
     console.error(
       "Photo feed error:",
-      error
+      error,
     );
   }
 
   /*
-   * Defensive duplicate protection.
-   *
-   * If two database rows somehow point
-   * to the exact same uploaded image,
-   * only show it once.
+   * First remove blocked users.
+   */
+  const visiblePhotos =
+    photos?.filter(
+      (photo) =>
+        !blockedUserIds.includes(
+          photo.user_id,
+        ),
+    ) ?? [];
+
+  /*
+   * Then remove duplicate
+   * media paths defensively.
    */
   const uniquePhotos =
-    photos?.filter(
+    visiblePhotos.filter(
       (
         photo,
         index,
-        array
+        array,
       ) =>
         index ===
         array.findIndex(
           (item) =>
             item.media_path ===
-            photo.media_path
-        )
-    ) ?? [];
+            photo.media_path,
+        ),
+    );
 
   return (
     <section className="mx-auto max-w-3xl">
@@ -123,7 +146,8 @@ export default async function PhotosPage() {
 
       </div>
 
-      {uniquePhotos.length === 0 ? (
+      {uniquePhotos.length ===
+      0 ? (
         <div className="theme-surface theme-border mt-8 rounded-2xl border p-8 text-center">
 
           <h2 className="text-xl font-semibold">
@@ -144,7 +168,7 @@ export default async function PhotosPage() {
                 key={photo.id}
                 photo={photo}
               />
-            )
+            ),
           )}
 
         </div>

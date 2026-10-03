@@ -3,19 +3,15 @@ import Link from "next/link";
 
 import {
   ExternalLink,
-  Pencil,
-  Users,
-  UserRoundCheck,
   FileText,
   ImageIcon,
   Headphones,
+  Bookmark,
 } from "lucide-react";
 
 import { getCurrentProfile } from "@/lib/profile";
 import { getAvatarSrc } from "@/lib/avatars";
 import { createClient } from "@/lib/supabase/server";
-
-import LogoutButton from "@/components/auth/logout-button";
 
 export default async function ProfilePage() {
   const profile =
@@ -34,11 +30,9 @@ export default async function ProfilePage() {
     blogsResult,
     photosResult,
     audioResult,
+    favoritesResult,
   ] = await Promise.all([
 
-    /*
-     * Followers
-     */
     supabase
       .from("follows")
       .select("*", {
@@ -47,12 +41,9 @@ export default async function ProfilePage() {
       })
       .eq(
         "following_id",
-        profile.id
+        profile.id,
       ),
 
-    /*
-     * Following
-     */
     supabase
       .from("follows")
       .select("*", {
@@ -61,12 +52,9 @@ export default async function ProfilePage() {
       })
       .eq(
         "follower_id",
-        profile.id
+        profile.id,
       ),
 
-    /*
-     * Blogs
-     */
     supabase
       .from("posts")
       .select("*", {
@@ -75,20 +63,17 @@ export default async function ProfilePage() {
       })
       .eq(
         "user_id",
-        profile.id
+        profile.id,
       )
       .eq(
         "type",
-        "blog"
+        "blog",
       )
       .eq(
         "status",
-        "active"
+        "active",
       ),
 
-    /*
-     * Photos
-     */
     supabase
       .from("posts")
       .select("*", {
@@ -97,20 +82,17 @@ export default async function ProfilePage() {
       })
       .eq(
         "user_id",
-        profile.id
+        profile.id,
       )
       .eq(
         "type",
-        "photo"
+        "photo",
       )
       .eq(
         "status",
-        "active"
+        "active",
       ),
 
-    /*
-     * Audio
-     */
     supabase
       .from("posts")
       .select("*", {
@@ -119,15 +101,26 @@ export default async function ProfilePage() {
       })
       .eq(
         "user_id",
-        profile.id
+        profile.id,
       )
       .eq(
         "type",
-        "audio"
+        "audio",
       )
       .eq(
         "status",
-        "active"
+        "active",
+      ),
+
+    supabase
+      .from("favorites")
+      .select("*", {
+        count: "exact",
+        head: true,
+      })
+      .eq(
+        "user_id",
+        profile.id,
       ),
   ]);
 
@@ -140,15 +133,16 @@ export default async function ProfilePage() {
     0;
 
   const blogs =
-    blogsResult.count ??
-    0;
+    blogsResult.count ?? 0;
 
   const photos =
-    photosResult.count ??
-    0;
+    photosResult.count ?? 0;
 
   const audio =
-    audioResult.count ??
+    audioResult.count ?? 0;
+
+  const favorites =
+    favoritesResult.count ??
     0;
 
   const links = [
@@ -156,131 +150,91 @@ export default async function ProfilePage() {
     profile.link_2,
     profile.link_3,
   ].filter(
-    Boolean
+    Boolean,
   ) as string[];
 
   return (
-    <section className="mx-auto max-w-3xl">
+    <div>
 
-      {/* Profile header */}
+      {/* Main profile */}
 
       <div className="theme-surface theme-border rounded-2xl border p-6 sm:p-8">
 
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
 
           <Image
             src={getAvatarSrc(
-              profile.avatar_id
+              profile.avatar_id,
             )}
             alt={`${profile.username} avatar`}
-            width={120}
-            height={120}
+            width={112}
+            height={112}
             className="h-28 w-28 rounded-full object-cover"
           />
 
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
-              <div>
-                <h1 className="text-3xl font-bold">
-                  {
-                    profile.username
-                  }
-                </h1>
-
-                <p className="theme-text-secondary mt-1 text-sm">
-                  NELO Profile
-                </p>
-              </div>
-
-              <Link
-                href="/profile/edit"
-                className="theme-accent-bg inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white"
-              >
-                <Pencil
-                  size={16}
-                />
-
-                Edit Profile
-              </Link>
-
-            </div>
+            <h1 className="text-3xl font-bold">
+              {profile.username}
+            </h1>
 
             {profile.bio ? (
-              <p className="theme-text-secondary mt-5 whitespace-pre-line">
+              <p className="theme-text-secondary mt-3 max-w-2xl whitespace-pre-line">
                 {profile.bio}
               </p>
             ) : (
-              <p className="theme-text-secondary mt-5 italic">
+              <p className="theme-text-secondary mt-3 italic">
                 No bio added yet.
               </p>
             )}
+
+            <div className="mt-5 flex flex-wrap gap-6">
+
+              <Link
+                href={`/users/${profile.username}/followers`}
+                className="transition hover:opacity-70"
+              >
+                <span className="font-bold">
+                  {followers}
+                </span>
+
+                <span className="theme-text-secondary ml-2 text-sm">
+                  Followers
+                </span>
+              </Link>
+
+              <Link
+                href={`/users/${profile.username}/following`}
+                className="transition hover:opacity-70"
+              >
+                <span className="font-bold">
+                  {following}
+                </span>
+
+                <span className="theme-text-secondary ml-2 text-sm">
+                  Following
+                </span>
+              </Link>
+
+            </div>
 
           </div>
 
         </div>
 
-        {/* Followers / Following */}
-
-        <div className="theme-border mt-8 flex flex-wrap gap-8 border-t pt-6">
-
-          <Link
-            href={`/users/${profile.username}/followers`}
-            className="flex items-center gap-2 transition hover:opacity-70"
-          >
-            <Users
-              size={18}
-              className="theme-accent"
-            />
-
-            <div>
-              <p className="font-semibold">
-                {followers}
-              </p>
-
-              <p className="theme-text-secondary text-sm">
-                Followers
-              </p>
-            </div>
-          </Link>
-
-          <Link
-            href={`/users/${profile.username}/following`}
-            className="flex items-center gap-2 transition hover:opacity-70"
-          >
-            <UserRoundCheck
-              size={18}
-              className="theme-accent"
-            />
-
-            <div>
-              <p className="font-semibold">
-                {following}
-              </p>
-
-              <p className="theme-text-secondary text-sm">
-                Following
-              </p>
-            </div>
-          </Link>
-
-        </div>
-
       </div>
 
-      {/* Content statistics */}
+      {/* Dashboard counts */}
 
       <div className="mt-8">
 
         <h2 className="text-lg font-semibold">
-          Content
+          Your NELO
         </h2>
 
-        <div className="mt-3 grid grid-cols-3 gap-3">
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
 
           <div className="theme-surface theme-border rounded-xl border p-4 text-center">
-
             <FileText
               size={20}
               className="theme-accent mx-auto"
@@ -293,11 +247,9 @@ export default async function ProfilePage() {
             <p className="theme-text-secondary text-xs">
               Blogs
             </p>
-
           </div>
 
           <div className="theme-surface theme-border rounded-xl border p-4 text-center">
-
             <ImageIcon
               size={20}
               className="theme-accent mx-auto"
@@ -310,11 +262,9 @@ export default async function ProfilePage() {
             <p className="theme-text-secondary text-xs">
               Photos
             </p>
-
           </div>
 
           <div className="theme-surface theme-border rounded-xl border p-4 text-center">
-
             <Headphones
               size={20}
               className="theme-accent mx-auto"
@@ -327,8 +277,25 @@ export default async function ProfilePage() {
             <p className="theme-text-secondary text-xs">
               Audio
             </p>
-
           </div>
+
+          <Link
+            href="/favorites"
+            className="theme-surface theme-border rounded-xl border p-4 text-center transition hover:opacity-80"
+          >
+            <Bookmark
+              size={20}
+              className="theme-accent mx-auto"
+            />
+
+            <p className="mt-2 text-xl font-bold">
+              {favorites}
+            </p>
+
+            <p className="theme-text-secondary text-xs">
+              Favorites
+            </p>
+          </Link>
 
         </div>
 
@@ -360,10 +327,9 @@ export default async function ProfilePage() {
 
                   <ExternalLink
                     size={16}
-                    className="shrink-0"
                   />
                 </a>
-              )
+              ),
             )}
 
           </div>
@@ -371,20 +337,6 @@ export default async function ProfilePage() {
         </div>
       )}
 
-      {/* Account */}
-
-      <div className="theme-border mt-10 border-t pt-6">
-
-        <h2 className="text-lg font-semibold">
-          Account
-        </h2>
-
-        <div className="mt-4">
-          <LogoutButton />
-        </div>
-
-      </div>
-
-    </section>
+    </div>
   );
 }

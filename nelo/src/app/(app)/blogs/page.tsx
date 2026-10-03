@@ -1,13 +1,30 @@
+import Link from "next/link";
+
+import {
+  Plus,
+} from "lucide-react";
+
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/profile";
+import { getBlockedUserIds } from "@/lib/blocks";
 
 import BlogCard from "@/components/blog/blog-card";
 
-import Link from "next/link";
-import { Plus } from "lucide-react";
-
 export default async function BlogsPage() {
+  const profile =
+    await getCurrentProfile();
+
+  if (!profile) {
+    return null;
+  }
+
   const supabase =
     await createClient();
+
+  const blockedUserIds =
+    await getBlockedUserIds(
+      profile.id,
+    );
 
   const {
     data: blogs,
@@ -16,6 +33,7 @@ export default async function BlogsPage() {
     .from("posts")
     .select(`
       id,
+      user_id,
       title,
       content_json,
       created_at,
@@ -49,27 +67,34 @@ export default async function BlogsPage() {
     `)
     .eq(
       "type",
-      "blog"
+      "blog",
     )
     .eq(
       "status",
-      "active"
+      "active",
     )
     .order(
       "created_at",
       {
-        ascending:
-          false,
-      }
+        ascending: false,
+      },
     )
     .limit(20);
-    
+
   if (error) {
     console.error(
       "Blog feed error:",
-      error
+      error,
     );
   }
+
+  const visibleBlogs =
+    blogs?.filter(
+      (blog) =>
+        !blockedUserIds.includes(
+          blog.user_id,
+        ),
+    ) ?? [];
 
   return (
     <section className="mx-auto max-w-3xl">
@@ -82,8 +107,7 @@ export default async function BlogsPage() {
           </h1>
 
           <p className="theme-text-secondary mt-2">
-            Discover stories and ideas
-            shared by the NELO community.
+            Stories and ideas shared by the NELO community.
           </p>
         </div>
 
@@ -100,9 +124,8 @@ export default async function BlogsPage() {
 
       </div>
 
-
-      {!blogs ||
-      blogs.length === 0 ? (
+      {visibleBlogs.length ===
+      0 ? (
         <div className="theme-surface theme-border mt-8 rounded-2xl border p-8 text-center">
 
           <h2 className="text-xl font-semibold">
@@ -110,20 +133,21 @@ export default async function BlogsPage() {
           </h2>
 
           <p className="theme-text-secondary mt-2">
-            Be the first person to
-            publish something.
+            Be the first person to write something.
           </p>
 
         </div>
       ) : (
-        <div className="mt-8 space-y-5">
+        <div className="mt-8 space-y-6">
 
-          {blogs.map((blog) => (
-            <BlogCard
-              key={blog.id}
-              blog={blog}
-            />
-          ))}
+          {visibleBlogs.map(
+            (blog) => (
+              <BlogCard
+                key={blog.id}
+                blog={blog}
+              />
+            ),
+          )}
 
         </div>
       )}

@@ -1,9 +1,7 @@
-import {
-  createClient,
-} from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function getBlockedUserIds(
-  userId: string
+  userId: string,
 ) {
   const supabase =
     await createClient();
@@ -12,25 +10,20 @@ export async function getBlockedUserIds(
     blockedByMe,
     blockedMe,
   ] = await Promise.all([
-
     supabase
       .from("blocks")
-      .select(
-        "blocked_id"
-      )
+      .select("blocked_id")
       .eq(
         "blocker_id",
-        userId
+        userId,
       ),
 
     supabase
       .from("blocks")
-      .select(
-        "blocker_id"
-      )
+      .select("blocker_id")
       .eq(
         "blocked_id",
-        userId
+        userId,
       ),
   ]);
 
@@ -38,14 +31,14 @@ export async function getBlockedUserIds(
     ...(
       blockedByMe.data?.map(
         (row) =>
-          row.blocked_id
+          row.blocked_id,
       ) ?? []
     ),
 
     ...(
       blockedMe.data?.map(
         (row) =>
-          row.blocker_id
+          row.blocker_id,
       ) ?? []
     ),
   ];

@@ -5,12 +5,26 @@ import {
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/profile";
+import { getBlockedUserIds } from "@/lib/blocks";
 
 import AudioCard from "@/components/audio/audio-card";
 
 export default async function AudioPage() {
+  const profile =
+    await getCurrentProfile();
+
+  if (!profile) {
+    return null;
+  }
+
   const supabase =
     await createClient();
+
+  const blockedUserIds =
+    await getBlockedUserIds(
+      profile.id,
+    );
 
   const {
     data: audioPosts,
@@ -19,6 +33,7 @@ export default async function AudioPage() {
     .from("posts")
     .select(`
       id,
+      user_id,
       title,
       content,
       media_path,
@@ -53,44 +68,49 @@ export default async function AudioPage() {
     `)
     .eq(
       "type",
-      "audio"
+      "audio",
     )
     .eq(
       "status",
-      "active"
+      "active",
     )
     .order(
       "created_at",
       {
         ascending: false,
-      }
+      },
     )
     .limit(20);
 
   if (error) {
     console.error(
       "Audio feed error:",
-      error
+      error,
     );
   }
 
-  /*
-   * Defensive duplicate filtering.
-   */
-  const uniqueAudio =
+  const visibleAudio =
     audioPosts?.filter(
+      (audio) =>
+        !blockedUserIds.includes(
+          audio.user_id,
+        ),
+    ) ?? [];
+
+  const uniqueAudio =
+    visibleAudio.filter(
       (
         audio,
         index,
-        array
+        array,
       ) =>
         index ===
         array.findIndex(
           (item) =>
             item.media_path ===
-            audio.media_path
-        )
-    ) ?? [];
+            audio.media_path,
+        ),
+    );
 
   return (
     <section className="mx-auto max-w-3xl">
@@ -120,7 +140,8 @@ export default async function AudioPage() {
 
       </div>
 
-      {uniqueAudio.length === 0 ? (
+      {uniqueAudio.length ===
+      0 ? (
         <div className="theme-surface theme-border mt-8 rounded-2xl border p-8 text-center">
 
           <h2 className="text-xl font-semibold">
@@ -140,9 +161,8 @@ export default async function AudioPage() {
               <AudioCard
                 key={audio.id}
                 audio={audio}
-                
               />
-            )
+            ),
           )}
 
         </div>

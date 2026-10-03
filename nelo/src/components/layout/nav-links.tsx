@@ -3,8 +3,10 @@
 import Link from "next/link";
 
 import {
-  usePathname,
-} from "next/navigation";
+  Search,
+} from "lucide-react";
+
+import { usePathname } from "next/navigation";
 
 import {
   FileText,
@@ -19,85 +21,62 @@ const navItems = [
   {
     name: "Blogs",
     href: "/blogs",
-    activePaths: [
-      "/blogs",
-      "/create/blog",
-    ],
+    activePaths: ["/blogs", "/create/blog"],
     icon: FileText,
   },
   {
     name: "Photos",
     href: "/photos",
-    activePaths: [
-      "/photos",
-      "/create/photo",
-    ],
+    activePaths: ["/photos", "/create/photo"],
     icon: ImageIcon,
   },
   {
     name: "Audio",
     href: "/audio",
-    activePaths: [
-      "/audio",
-      "/create/audio",
-    ],
+    activePaths: ["/audio", "/create/audio"],
     icon: Headphones,
   },
   {
     name: "Favorites",
     href: "/favorites",
-    activePaths: [
-      "/favorites",
-    ],
+    activePaths: ["/favorites"],
     icon: Heart,
   },
   {
     name: "Chat",
     href: "/chat",
-    activePaths: [
-      "/chat",
-    ],
+    activePaths: ["/chat"],
     icon: MessageCircle,
   },
   {
     name: "Notifications",
     href: "/notifications",
-    activePaths: [
-      "/notifications",
-    ],
+    activePaths: ["/notifications"],
     icon: Bell,
+  },
+  {
+    name: "Search",
+    href: "/search",
+    activePaths: ["/search"],
+    icon: Search,
   },
 ];
 
 export default function NavLinks() {
-  const pathname =
-    usePathname();
+  const pathname = usePathname();
 
-  function isActive(
-    paths: string[]
-  ) {
+  function isActive(paths: string[]) {
     return paths.some(
-      (path) =>
-        pathname === path ||
-        pathname.startsWith(
-          `${path}/`
-        )
+      (path) => pathname === path || pathname.startsWith(`${path}/`),
     );
   }
 
   return (
     <nav className="flex items-center gap-1">
+      {navItems.map((item) => {
+        const Icon = item.icon;
 
-      {navItems.map(
-        (item) => {
-          const Icon =
-            item.icon;
-
-          const active =
-            isActive(
-              item.activePaths
-            );
-
+        const active = isActive(item.activePaths);
 
         return (
           <Link
@@ -114,15 +93,11 @@ export default function NavLinks() {
             >
               <Icon size={17} />
 
-              <span>
-                {item.name}
-              </span>
+              <span>{item.name}</span>
             </span>
           </Link>
         );
-        }
-      )}
-
+      })}
     </nav>
   );
 }
