@@ -1,86 +1,118 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 import {
-  Home,
-  FileText,
-  ImageIcon,
-  Headphones,
+  usePathname,
+} from "next/navigation";
+
+import {
+  Search,
   MessageCircle,
-  User, PlusCircle,
+  Bell,
 } from "lucide-react";
 
-const items = [
-  {
-    href: "/home",
-    label: "Home",
-    icon: Home,
-  },
-  {
-    href: "/create",
-    label: "Create",
-    icon: PlusCircle,
-  },
-  {
-    href: "/blogs",
-    label: "Blogs",
-    icon: FileText,
-  },
-  {
-    href: "/photos",
-    label: "Photos",
-    icon: ImageIcon,
-  },
-  {
-    href: "/audio",
-    label: "Audio",
-    icon: Headphones,
-  },
-  {
-    href: "/chat",
-    label: "Chat",
-    icon: MessageCircle,
-  },
-  {
-    href: "/profile",
-    label: "Profile",
-    icon: User,
-  },
-];
+import MobileFeedMenu from "@/components/layout/mobile-feed-menu";
 
-export default function MobileNav() {
-  const pathname = usePathname();
+import ChatUnreadBadge from "@/components/chat/chat-unread-badge";
+
+type MobileNavProps = {
+  userId: string;
+};
+
+export default function MobileNav({
+  userId,
+}: MobileNavProps) {
+  const pathname =
+    usePathname();
+
+  const items = [
+    {
+      href: "/search",
+      label: "",
+      icon: Search,
+    },
+    {
+      href: "/chat",
+      label: "",
+      icon: MessageCircle,
+    },
+    {
+      href:
+        "/notifications",
+      label:
+        "",
+      icon: Bell,
+    },
+  ];
 
   return (
     <nav className="theme-bg theme-border fixed bottom-0 left-0 right-0 z-50 border-t md:hidden">
-      <div className="grid h-16 grid-cols-6">
-        {items.map((item) => {
-          const Icon = item.icon;
 
-          const active =
-            pathname === item.href;
+      <div className="grid h-16 grid-cols-4">
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center justify-center gap-1 text-[10px] ${
-                active
-                  ? "theme-accent"
-                  : "theme-text-secondary"
-              }`}
-            >
-              <Icon size={20} />
+        {/* Feed */}
 
-              <span>
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+        <MobileFeedMenu />
+
+        {/* Other nav items */}
+
+        {items.map(
+          (item) => {
+            const Icon =
+              item.icon;
+
+            const active =
+              pathname ===
+                item.href ||
+              pathname.startsWith(
+                `${item.href}/`,
+              );
+
+            return (
+              <Link
+                key={
+                  item.href
+                }
+                href={
+                  item.href
+                }
+                className={`relative flex flex-col items-center justify-center gap-1 text-[10px] ${
+                  active
+                    ? "theme-accent"
+                    : "theme-text-secondary"
+                }`}
+              >
+                <div className="relative">
+
+                  <Icon
+                    size={21}
+                  />
+
+                  {item.href ===
+                    "/chat" && (
+                    <div className="absolute -right-4 -top-2">
+                      <ChatUnreadBadge
+                        userId={
+                          userId
+                        }
+                      />
+                    </div>
+                  )}
+
+                </div>
+
+                <span>
+                  {item.label}
+                </span>
+
+              </Link>
+            );
+          },
+        )}
+
       </div>
+
     </nav>
   );
 }

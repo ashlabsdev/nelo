@@ -2,67 +2,38 @@
 
 import Link from "next/link";
 
-import {
-  Search,
-} from "lucide-react";
-
 import { usePathname } from "next/navigation";
 
-import {
-  FileText,
-  ImageIcon,
-  Headphones,
-  Heart,
-  MessageCircle,
-  Bell,
-} from "lucide-react";
+import { Search, MessageCircle, Bell } from "lucide-react";
+
+import ChatUnreadBadge from "@/components/chat/chat-unread-badge";
+
+type NavLinksProps = {
+  userId: string;
+};
 
 const navItems = [
   {
-    name: "Blogs",
-    href: "/blogs",
-    activePaths: ["/blogs", "/create/blog"],
-    icon: FileText,
+    name: "",
+    href: "/search",
+    activePaths: ["/search"],
+    icon: Search,
   },
   {
-    name: "Photos",
-    href: "/photos",
-    activePaths: ["/photos", "/create/photo"],
-    icon: ImageIcon,
-  },
-  {
-    name: "Audio",
-    href: "/audio",
-    activePaths: ["/audio", "/create/audio"],
-    icon: Headphones,
-  },
-  {
-    name: "Favorites",
-    href: "/favorites",
-    activePaths: ["/favorites"],
-    icon: Heart,
-  },
-  {
-    name: "Chat",
+    name: "",
     href: "/chat",
     activePaths: ["/chat"],
     icon: MessageCircle,
   },
   {
-    name: "Notifications",
+    name: "",
     href: "/notifications",
     activePaths: ["/notifications"],
     icon: Bell,
   },
-  {
-    name: "Search",
-    href: "/search",
-    activePaths: ["/search"],
-    icon: Search,
-  },
 ];
 
-export default function NavLinks() {
+export default function NavLinks({ userId }: NavLinksProps) {
   const pathname = usePathname();
 
   function isActive(paths: string[]) {
@@ -72,7 +43,7 @@ export default function NavLinks() {
   }
 
   return (
-    <nav className="flex items-center gap-1">
+    <div className="flex items-center gap-1">
       {navItems.map((item) => {
         const Icon = item.icon;
 
@@ -82,22 +53,21 @@ export default function NavLinks() {
           <Link
             key={item.href}
             href={item.href}
-            className="flex items-center rounded-lg px-2 py-1.5 text-sm"
+            title={item.name}
+            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+              active
+                ? "theme-accent text-white"
+                : "theme-text-secondary hover:opacity-70"
+            }`}
           >
-            <span
-              className={`flex items-center gap-2 rounded-md px-2 py-1 transition ${
-                active
-                  ? "theme-accent-bg text-white"
-                  : "theme-text-secondary hover:opacity-70"
-              }`}
-            >
-              <Icon size={17} />
+            <Icon size={17} />
 
-              <span>{item.name}</span>
-            </span>
+            <span className="hidden lg:inline">{item.name}</span>
+
+            {item.href === "/chat" && <ChatUnreadBadge userId={userId} />}
           </Link>
         );
       })}
-    </nav>
+    </div>
   );
 }
