@@ -8,6 +8,8 @@ import { Search, MessageCircle, Bell } from "lucide-react";
 
 import ChatUnreadBadge from "@/components/chat/chat-unread-badge";
 
+import NotificationUnreadBadge from "@/components/notifications/notification-unread-badge";
+
 type NavLinksProps = {
   userId: string;
 };
@@ -65,6 +67,10 @@ export default function NavLinks({ userId }: NavLinksProps) {
             <span className="hidden lg:inline">{item.name}</span>
 
             {item.href === "/chat" && <ChatUnreadBadge userId={userId} />}
+
+            {item.href === "/notifications" && (
+              <NotificationUnreadBadge userId={userId} />
+            )}
           </Link>
         );
       })}
