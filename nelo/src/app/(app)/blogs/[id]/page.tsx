@@ -10,6 +10,7 @@ import { getAvatarSrc } from "@/lib/avatars";
 import BlogContent from "@/components/blog/blog-content";
 import PostActions from "@/components/post/post-actions";
 import PostManageMenu from "@/components/post/post-manage-menu";
+//import ReportPostButton from "@/components/post/report-post-button";
 
 type BlogPageProps = {
   params: Promise<{
@@ -172,6 +173,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
             post.favorites?.map((favorite) => favorite.user_id) ?? []
           }
         />
+        {/* <ReportPostButton postId={id} ownerUserId={user_id} /> */}
       </div>
 
       {/* Author info */}

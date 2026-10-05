@@ -4,6 +4,7 @@ import PostManageMenu from "@/components/post/post-manage-menu";
 import { Clock, ArrowRight } from "lucide-react";
 
 import PostActions from "@/components/post/post-actions";
+import ReportPostButton from "@/components/post/report-post-button";
 
 import { getAvatarSrc } from "@/lib/avatars";
 import { createBlogPreview } from "@/lib/blog";
@@ -181,6 +182,7 @@ export default function BlogCard({ blog }: BlogCardProps) {
             blog.favorites?.map((favorite) => favorite.user_id) ?? []
           }
         />
+        <ReportPostButton postId={blog.id} ownerUserId={blog.user_id} />
       </div>
     </article>
   );

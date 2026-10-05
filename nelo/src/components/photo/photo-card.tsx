@@ -7,6 +7,7 @@ import PostActions from "@/components/post/post-actions";
 
 import { getAvatarSrc } from "@/lib/avatars";
 import { getPostMediaUrl } from "@/lib/media";
+import ReportPostButton from "../post/report-post-button";
 
 type HashtagRelation = {
   hashtags:
@@ -190,6 +191,7 @@ export default function PhotoCard({ photo }: PhotoCardProps) {
               photo.favorites?.map((favorite) => favorite.user_id) ?? []
             }
           />
+          <ReportPostButton postId={photo.id} ownerUserId={photo.user_id} />
         </div>
       </div>
     </article>
