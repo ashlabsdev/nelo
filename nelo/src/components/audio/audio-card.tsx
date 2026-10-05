@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-
+import PostManageMenu from "@/components/post/post-manage-menu";
 import { CalendarDays, ExternalLink } from "lucide-react";
 
 import PostActions from "@/components/post/post-actions";
@@ -22,7 +22,7 @@ type HashtagRelation = {
 type AudioCardProps = {
   audio: {
     id: string;
-
+    user_id: string;
     title: string | null;
 
     content: string | null;
@@ -131,6 +131,12 @@ export default function AudioCard({ audio }: AudioCardProps) {
 
             {publishedDate}
           </div>
+          <PostManageMenu
+            postId={audio.id}
+            postType="audio"
+            ownerUserId={audio.user_id}
+            mediaPath={audio.media_path}
+          />
         </div>
       </div>
 

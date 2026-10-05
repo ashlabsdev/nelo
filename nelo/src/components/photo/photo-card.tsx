@@ -1,9 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-
-import {
-  CalendarDays,
-} from "lucide-react";
+import PostManageMenu from "@/components/post/post-manage-menu";
+import { CalendarDays } from "lucide-react";
 
 import PostActions from "@/components/post/post-actions";
 
@@ -24,17 +22,10 @@ type HashtagRelation = {
 type PhotoCardProps = {
   photo: {
     id: string;
-
-    content:
-      | string
-      | null;
-
-    media_path:
-      | string
-      | null;
-
+    user_id: string;
+    content: string | null;
+    media_path: string | null;
     created_at: string;
-
     profiles:
       | {
           username: string;
@@ -46,9 +37,7 @@ type PhotoCardProps = {
         }[]
       | null;
 
-    post_hashtags?:
-      | HashtagRelation[]
-      | null;
+    post_hashtags?: HashtagRelation[] | null;
 
     likes?: {
       user_id: string;
@@ -68,103 +57,55 @@ type PhotoCardProps = {
   };
 };
 
-export default function PhotoCard({
-  photo,
-}: PhotoCardProps) {
-  const profile =
-    Array.isArray(
-      photo.profiles
-    )
-      ? photo.profiles[0]
-      : photo.profiles;
+export default function PhotoCard({ photo }: PhotoCardProps) {
+  const profile = Array.isArray(photo.profiles)
+    ? photo.profiles[0]
+    : photo.profiles;
 
-  if (
-    !profile ||
-    !photo.media_path
-  ) {
+  if (!profile || !photo.media_path) {
     return null;
   }
 
-  const imageUrl =
-    getPostMediaUrl(
-      photo.media_path
-    );
+  const imageUrl = getPostMediaUrl(photo.media_path);
 
   const hashtags =
     photo.post_hashtags
-      ?.flatMap(
-        (relation) => {
-          const tag =
-            relation.hashtags;
+      ?.flatMap((relation) => {
+        const tag = relation.hashtags;
 
-          if (
-            Array.isArray(tag)
-          ) {
-            return tag;
-          }
-
-          return tag
-            ? [tag]
-            : [];
+        if (Array.isArray(tag)) {
+          return tag;
         }
-      )
-      .map(
-        (tag) =>
-          tag.name
-      ) ?? [];
 
-  const likeUserIds =
-    photo.likes?.map(
-      (like) =>
-        like.user_id
-    ) ?? [];
+        return tag ? [tag] : [];
+      })
+      .map((tag) => tag.name) ?? [];
 
-  const boostUserIds =
-    photo.boosts?.map(
-      (boost) =>
-        boost.user_id
-    ) ?? [];
+  const likeUserIds = photo.likes?.map((like) => like.user_id) ?? [];
 
-  const commentCount =
-    photo.comments?.length ??
-    0;
+  const boostUserIds = photo.boosts?.map((boost) => boost.user_id) ?? [];
 
-  const date =
-    new Intl.DateTimeFormat(
-      "en-IN",
-      {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }
-    ).format(
-      new Date(
-        photo.created_at
-      )
-    );
+  const commentCount = photo.comments?.length ?? 0;
+
+  const date = new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(photo.created_at));
 
   const description =
-    photo.content &&
-    photo.content.length > 300
-      ? `${photo.content
-          .slice(0, 300)
-          .trim()}...`
+    photo.content && photo.content.length > 300
+      ? `${photo.content.slice(0, 300).trim()}...`
       : photo.content;
 
   return (
     <article className="theme-surface theme-border overflow-hidden rounded-2xl border">
-
       {/* Author */}
 
       <div className="flex items-center gap-3 p-4 sm:p-5">
-
-        <Link
-          href={`/users/${profile.username}`}
-        >
+        <Link href={`/users/${profile.username}`}>
           <Image
-            src={getAvatarSrc(
-              profile.avatar_id
-            )}
+            src={getAvatarSrc(profile.avatar_id)}
             alt={`${profile.username} avatar`}
             width={44}
             height={44}
@@ -173,40 +114,33 @@ export default function PhotoCard({
         </Link>
 
         <div>
-
           <Link
             href={`/users/${profile.username}`}
             className="font-medium hover:underline"
           >
-            {
-              profile.username
-            }
+            {profile.username}
           </Link>
 
           <div className="theme-text-secondary mt-1 flex items-center gap-1 text-xs">
-            <CalendarDays
-              size={13}
-            />
+            <CalendarDays size={13} />
 
             {date}
           </div>
-
+          <PostManageMenu
+            postId={photo.id}
+            postType="photo"
+            ownerUserId={photo.user_id}
+            mediaPath={photo.media_path}
+          />
         </div>
-
       </div>
 
       {/* Photo */}
 
-      <Link
-        href={`/photos/${photo.id}`}
-        className="block"
-      >
+      <Link href={`/photos/${photo.id}`} className="block">
         <Image
           src={imageUrl}
-          alt={
-            photo.content ??
-            "NELO photo"
-          }
+          alt={photo.content ?? "NELO photo"}
           width={1200}
           height={900}
           className="max-h-175 w-full object-contain"
@@ -216,29 +150,19 @@ export default function PhotoCard({
       {/* Description */}
 
       <div className="p-4 sm:p-5">
-
         {description && (
-          <p className="whitespace-pre-line leading-7">
-            {description}
-          </p>
+          <p className="whitespace-pre-line leading-7">{description}</p>
         )}
 
         {/* Hashtags */}
 
         {hashtags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
-
-            {hashtags.map(
-              (tag) => (
-                <span
-                  key={tag}
-                  className="theme-accent text-sm"
-                >
-                  #{tag}
-                </span>
-              )
-            )}
-
+            {hashtags.map((tag) => (
+              <span key={tag} className="theme-accent text-sm">
+                #{tag}
+              </span>
+            ))}
           </div>
         )}
 
@@ -259,26 +183,15 @@ export default function PhotoCard({
           <PostActions
             postId={photo.id}
             postType="photo"
-            likeUserIds={
-              likeUserIds
-            }
-            commentCount={
-              commentCount
-            }
-            boostUserIds={
-              boostUserIds
-            }
+            likeUserIds={likeUserIds}
+            commentCount={commentCount}
+            boostUserIds={boostUserIds}
             favoriteUserIds={
-              photo.favorites?.map(
-                (favorite) =>
-                  favorite.user_id
-              ) ?? []
+              photo.favorites?.map((favorite) => favorite.user_id) ?? []
             }
           />
         </div>
-
       </div>
-
     </article>
   );
 }
