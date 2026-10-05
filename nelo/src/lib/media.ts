@@ -1,9 +1,5 @@
-export function getPostMediaUrl(
-  path: string
-) {
-  const baseUrl =
-    process.env
-      .NEXT_PUBLIC_SUPABASE_URL;
+export function getPostMediaUrl(path: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
   if (!baseUrl) {
     return "";

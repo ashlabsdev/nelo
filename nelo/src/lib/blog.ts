@@ -4,9 +4,7 @@ type TiptapNode = {
   content?: TiptapNode[];
 };
 
-export function extractTextFromTiptap(
-  json: unknown
-): string {
+export function extractTextFromTiptap(json: unknown): string {
   if (!json || typeof json !== "object") {
     return "";
   }
@@ -15,9 +13,7 @@ export function extractTextFromTiptap(
     let text = node.text ?? "";
 
     if (Array.isArray(node.content)) {
-      text += node.content
-        .map((child) => walk(child))
-        .join(" ");
+      text += node.content.map((child) => walk(child)).join(" ");
     }
 
     return text;
@@ -28,19 +24,12 @@ export function extractTextFromTiptap(
     .trim();
 }
 
-export function createBlogPreview(
-  json: unknown,
-  maxLength = 220
-) {
-  const text =
-    extractTextFromTiptap(json);
+export function createBlogPreview(json: unknown, maxLength = 220) {
+  const text = extractTextFromTiptap(json);
 
   if (text.length <= maxLength) {
     return text;
   }
 
-  return (
-    text.slice(0, maxLength).trim() +
-    "..."
-  );
+  return text.slice(0, maxLength).trim() + "...";
 }
