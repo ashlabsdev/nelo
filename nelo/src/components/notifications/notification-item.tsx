@@ -4,7 +4,15 @@ import Image from "next/image";
 
 import { useRouter } from "next/navigation";
 
-import { Heart, MessageCircle, Repeat2, UserPlus, Bell } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Repeat2,
+  UserPlus,
+  Bell,
+  ShieldAlert,
+  Clock3,
+} from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { getAvatarSrc } from "@/lib/avatars";
@@ -23,7 +31,10 @@ type NotificationItemProps = {
       username: string;
       avatarId: number;
     } | null;
-
+    data?: {
+      deadline?: string;
+      violation_number?: number;
+    };
     post: {
       id: string;
       type: string | null;
@@ -39,6 +50,13 @@ export default function NotificationItem({
 
   function renderTypeIcon() {
     switch (notification.type) {
+      case "moderation_violation":
+        return (
+          <ShieldAlert size={16} className="mt-0.5 shrink-0 text-red-500" />
+        );
+
+      case "post_removed":
+        return <Clock3 size={16} className="mt-0.5 shrink-0 text-red-500" />;
       case "like":
         return <Heart size={16} className="theme-accent mt-0.5 shrink-0" />;
 
@@ -62,6 +80,11 @@ export default function NotificationItem({
     const username = notification.actor?.username;
 
     switch (notification.type) {
+      case "moderation_violation":
+        return "A post you published was found to violate NELO rules. You have 24 hours to delete it.";
+
+      case "post_removed":
+        return "Your post was automatically removed because the moderation deadline expired.";
       case "follow":
         return username
           ? `@${username} started following you.`
@@ -167,6 +190,18 @@ export default function NotificationItem({
           <p className="text-sm leading-6">{getMessage()}</p>
         </div>
 
+        {notification.type === "moderation_violation" &&
+          notification.data?.deadline && (
+            <p className="mt-2 text-xs font-medium text-red-500">
+              Delete deadline:{" "}
+              {new Intl.DateTimeFormat("en-IN", {
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              }).format(new Date(notification.data.deadline))}
+            </p>
+          )}
         {notification.post?.title && (
           <p className="theme-text-secondary mt-1 truncate text-xs">
             {notification.post.title}

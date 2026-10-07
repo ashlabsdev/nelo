@@ -17,7 +17,7 @@ export async function getCurrentProfile() {
     .select(
       `
       id,
-      username,
+      username, account_status,
       avatar_id,
       bio,
       website_url,

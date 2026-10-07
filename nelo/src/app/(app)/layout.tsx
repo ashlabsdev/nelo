@@ -12,25 +12,37 @@ export default async function AppLayout({
 }) {
   const supabase = await createClient();
 
-  const { data, error } =
-    await supabase.auth.getClaims();
+  const { data, error } = await supabase.auth.getClaims();
 
   if (error || !data?.claims) {
     redirect("/auth/login");
   }
 
-  const profile =
-    await getCurrentProfile();
+  const profile = await getCurrentProfile();
 
   if (!profile) {
     redirect("/auth/login");
   }
 
+  /*
+   * Suspended/banned accounts should
+   * not enter the protected app.
+   *
+   * /suspended must live OUTSIDE
+   * the (app) route group.
+   */
   if (
-    profile.username.startsWith(
-      "user_"
-    )
+    profile.account_status === "suspended" ||
+    profile.account_status === "banned"
   ) {
+    redirect("/suspended");
+  }
+
+  /*
+   * First-time users still need
+   * to choose their username.
+   */
+  if (profile.username.startsWith("user_")) {
     redirect("/complete-profile");
   }
 
@@ -39,6 +51,7 @@ export default async function AppLayout({
       userId={profile.id}
       username={profile.username}
       avatarId={profile.avatar_id}
+      isAdmin={profile.role === "admin"}
     >
       {children}
     </AppShell>

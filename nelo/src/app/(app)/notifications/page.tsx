@@ -56,7 +56,7 @@ export default async function NotificationsPage() {
 
       return {
         id: row.id,
-
+        data: row.data,
         type: row.type,
 
         isRead: row.is_read,

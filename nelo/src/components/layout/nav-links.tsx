@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import { usePathname } from "next/navigation";
 
-import { Search, MessageCircle, Bell } from "lucide-react";
+import { Search, MessageCircle, Bell, ShieldCheck } from "lucide-react";
 
 import ChatUnreadBadge from "@/components/chat/chat-unread-badge";
 
@@ -12,31 +12,45 @@ import NotificationUnreadBadge from "@/components/notifications/notification-unr
 
 type NavLinksProps = {
   userId: string;
+  isAdmin: boolean;
 };
 
-const navItems = [
-  {
-    name: "",
-    href: "/search",
-    activePaths: ["/search"],
-    icon: Search,
-  },
-  {
-    name: "",
-    href: "/chat",
-    activePaths: ["/chat"],
-    icon: MessageCircle,
-  },
-  {
-    name: "",
-    href: "/notifications",
-    activePaths: ["/notifications"],
-    icon: Bell,
-  },
-];
-
-export default function NavLinks({ userId }: NavLinksProps) {
+export default function NavLinks({ userId, isAdmin }: NavLinksProps) {
   const pathname = usePathname();
+
+  const navItems = [
+    {
+      name: "",
+      href: "/search",
+      activePaths: ["/search"],
+      icon: Search,
+    },
+
+    {
+      name: "",
+      href: "/chat",
+      activePaths: ["/chat"],
+      icon: MessageCircle,
+    },
+
+    {
+      name: "",
+      href: "/notifications",
+      activePaths: ["/notifications"],
+      icon: Bell,
+    },
+
+    ...(isAdmin
+      ? [
+          {
+            name: "",
+            href: "/admin",
+            activePaths: ["/admin"],
+            icon: ShieldCheck,
+          },
+        ]
+      : []),
+  ];
 
   function isActive(paths: string[]) {
     return paths.some(

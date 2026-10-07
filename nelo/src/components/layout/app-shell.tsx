@@ -12,6 +12,7 @@ type AppShellProps = {
   userId: string;
   username: string;
   avatarId: number;
+  isAdmin: boolean;
 };
 
 export default function AppShell({
@@ -19,12 +20,18 @@ export default function AppShell({
   userId,
   username,
   avatarId,
+  isAdmin,
 }: AppShellProps) {
   return (
     <CurrentUserProvider userId={userId}>
       <ToastProvider>
         <div className="theme-bg theme-text flex min-h-screen flex-col">
-          <Navbar username={username} avatarId={avatarId} userId={userId} />
+          <Navbar
+            username={username}
+            avatarId={avatarId}
+            userId={userId}
+            isAdmin={isAdmin}
+          />
 
           <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-24 pt-28 sm:px-6 md:pb-10 lg:px-8">
             {children}

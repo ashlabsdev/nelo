@@ -91,6 +91,8 @@ export default async function AdminPage() {
         <Flag size={17} />
         Open Moderation Queue
       </Link>
+
+      <Link href="/admin/cases">Moderation Cases</Link>
     </section>
   );
 }
