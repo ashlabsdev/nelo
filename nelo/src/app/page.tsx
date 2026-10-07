@@ -1,15 +1,17 @@
-export default function Home() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-black">
-      <div className="text-center">
-        <h1 className="text-6xl font-bold text-white">
-          NELO
-        </h1>
+import { redirect } from "next/navigation";
 
-        <p className="mt-4 text-gray-400">
-          Connect. Create. Share.
-        </p>
-      </div>
-    </main>
-  );
+import { createClient } from "@/lib/supabase/server";
+
+export default async function HomePage() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect("/blogs");
+  }
+
+  redirect("/auth/login");
 }
