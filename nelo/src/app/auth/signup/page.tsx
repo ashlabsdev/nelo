@@ -42,9 +42,7 @@ export default function SignupPage() {
     }
 
     if (!data.session) {
-      setMessage(
-        "Account created. Check your email to confirm your account."
-      );
+      setMessage("Account created. Check your email to confirm your account.");
     } else {
       router.push("/blogs");
     }
@@ -55,10 +53,15 @@ export default function SignupPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-black px-4 text-white">
       <div className="w-full max-w-md">
-        <Image src="/icon.png" alt="NELO Logo" className="mx-auto mt-4" width={100} height={100} />
-        <p className="mt-2 text-center text-gray-400">
-          Sign-Up for NELO
-        </p>
+        <Image
+          src="/icon.png"
+          alt="NELO Logo"
+          className="mx-auto mt-4 h-auto w-24"
+          width={100}
+          height={100}
+          loading="eager"
+        />
+        <p className="mt-2 text-center text-gray-400">Sign-Up for NELO</p>
 
         <form onSubmit={handleSignup} className="mt-8 space-y-4">
           <input
@@ -98,9 +101,7 @@ export default function SignupPage() {
         </form>
 
         {message && (
-          <p className="mt-4 text-center text-sm text-gray-300">
-            {message}
-          </p>
+          <p className="mt-4 text-center text-sm text-gray-300">{message}</p>
         )}
 
         <p className="mt-6 text-center text-sm text-gray-400">
